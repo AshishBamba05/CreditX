@@ -26,11 +26,11 @@ FEATURES = ['R_DEBT_INCOME', 'T_EXPENDITURE_12', 'R_DEBT_SAVINGS']
 X = df[FEATURES]
 y = df["CREDIT_SCORE"]
 
-rus = RandomUnderSampler(random_state=42)
-X_resampled, y_resampled = rus.fit_resample(X, y)
+#rus = RandomUnderSampler(random_state=42)
+#X_resampled, y_resampled = rus.fit_resample(X, y)
 
 X_train, X_test, y_train, y_test = train_test_split(
-    X_resampled, y_resampled, test_size=0.3, random_state=0
+    X, y, test_size=0.3, random_state=0
 )
 
 scaler = StandardScaler()
