@@ -37,5 +37,5 @@ SELECT
   END AS score_category,
   timestamp
 FROM predictions
-ORDER BY timestamp DESC
+ORDER BY timestamp ASC
 
