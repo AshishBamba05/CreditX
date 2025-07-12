@@ -6,9 +6,9 @@
 
 - The model is trained on a [Kaggle dataset]([https://www.kaggle.com/](https://www.kaggle.com/datasets/conorsully1/credit-score)) and split using an 80/20 train-test ratio.
 - Once the input features are extracted, the model performs feature engineering using the following formulas:
--  **r_debt_income = debt / (income + 1)**
--  **t_expenditure_12 = expenditure**
--  **debt_savings = debt / (savings + 1)**
+      **r_debt_income = debt / (income + 1)**
+      **t_expenditure_12 = expenditure**
+      **debt_savings = debt / (savings + 1)**
 
 - I used **Support Vector Machines (SVMs)** from **Scikit-Learn** to build the predictive model.
 - The application is deployed using **Streamlit**.
