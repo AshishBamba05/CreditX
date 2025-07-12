@@ -4,7 +4,7 @@
 
 ## 🚀 How It Works
 
-- The model is trained on a [Kaggle dataset](https://www.kaggle.com/) and split using an 80/20 train-test ratio.
+- The model is trained on a [Kaggle dataset]([https://www.kaggle.com/](https://www.kaggle.com/datasets/conorsully1/credit-score)) and split using an 80/20 train-test ratio.
 - I used **Support Vector Machines (SVMs)** from **Scikit-Learn** to build the predictive model.
 - The application is deployed using **Streamlit**.
 
