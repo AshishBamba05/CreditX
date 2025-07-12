@@ -37,5 +37,6 @@ SELECT
   END AS score_category,
   timestamp
 FROM predictions
-ORDER BY timestamp ASC
+ORDER BY timestamp DESC
+LIMIT 5
 

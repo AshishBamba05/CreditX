@@ -6,6 +6,7 @@ from sklearn.ensemble import RandomForestRegressor
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.svm import SVR
+import sqlite3
 
 
 from db_utils import (
@@ -99,7 +100,10 @@ if st.button("Predict My Credit Score"):
 
     st.success(f"Estimated Credit Score: {prediction}  \nCategory: {label}")
 
-    insert_prediction(income, debt, savings, expenditure, prediction)
+    insert_prediction(income, debt, savings, expenditure,
+                  r_debt_income, t_expenditure_12,
+                  r_debt_savings, prediction)
+
 
     # --- Bracket Classification ---
     sql = run_sql_query_from_file("ex_queries.sql", "classify_user",
@@ -136,4 +140,37 @@ prediction_df = fetch_predictions()
 if not prediction_df.empty:
     st.dataframe(prediction_df)
 else:
-    st.info("No predictions found yet.")
+    st.info("No predictions yet.")
+
+
+
+if st.button("Drop & Recreate Prediction Table"):
+    conn = sqlite3.connect("creditx_predictions.db")
+    cursor = conn.cursor()
+
+    # Drop and recreate the correct schema
+    cursor.execute("DROP TABLE IF EXISTS predictions")
+    cursor.execute("""
+        CREATE TABLE predictions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            income FLOAT,
+            debt FLOAT,
+            savings FLOAT,
+            expenditure FLOAT,
+            r_debt_income FLOAT,
+            t_expenditure_12 FLOAT,
+            r_debt_savings FLOAT,
+            score FLOAT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+    st.success("✅ Table has been dropped and recreated.")
+    st.dataframe(pd.DataFrame(columns=[
+        "id", "timestamp", "income", "debt", "savings",
+        "expenditure", "r_debt_income", "t_expenditure_12",
+        "r_debt_savings", "score"
+    ]))
+
