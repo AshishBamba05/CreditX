@@ -3,9 +3,10 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestRegressor
-from imblearn.under_sampling import RandomUnderSampler
 import matplotlib.pyplot as plt
 import pandas as pd
+from sklearn.svm import SVR
+
 
 from db_utils import (
     insert_prediction,
@@ -37,23 +38,24 @@ scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-model = RandomForestRegressor(n_estimators=200, random_state=42)
-model.fit(X_train, y_train)
+svm_model = SVR(kernel='rbf', C=150, epsilon=17)
+svm_model.fit(X_train, y_train)
 
 # --- Feature Importance ---
-importances = model.feature_importances_
-feat_names = X.columns
+#importances = model.feature_importances_
+#feat_names = X.columns
 
-plt.figure(figsize=(10, 6))
-plt.barh(feat_names, importances)
-plt.xlabel("Feature Importance")
-plt.title("Random Forest Feature Importance")
-plt.tight_layout()
-st.subheader("Feature Importance")
-st.pyplot(plt)
+#plt.figure(figsize=(10, 6))
+#plt.barh(feat_names, importances)
+#plt.xlabel("Feature Importance")
+#plt.title("Random Forest Feature Importance")
+#plt.tight_layout()
+#st.subheader("Feature Importance")
+#st.pyplot(plt)
 
 # --- Model Evaluation ---
-y_pred = model.predict(X_test)
+y_pred = svm_model.predict(X_test)
+#y_pred = model.predict(X_test)
 mae = mean_absolute_error(y_test, y_pred)
 mse = mean_squared_error(y_test, y_pred)
 r2 = r2_score(y_test, y_pred)
