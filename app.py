@@ -82,6 +82,7 @@ def classify_score(score):
     else:
         return "🔴 Poor"
 
+
 if st.button("Predict My Credit Score"):
     # --- Feature Engineering ---
     r_debt_income = debt / (income + 1)
@@ -114,6 +115,17 @@ if st.button("Predict My Credit Score"):
         st.write("Expenditure Bracket:", bracket_df["expenditure_bracket"][0])
     else:
         st.error("⚠️ Couldn't find classification query in ex_queries.sql.")
+
+
+st.subheader("Recent Scores with Category Labels")
+recent_scores_sql = run_sql_query_from_file("ex_queries.sql", "recent_scores_with_labels")
+
+if recent_scores_sql:
+    df = pd.read_sql_query(recent_scores_sql, conn)
+    st.dataframe(df)
+else:
+    st.error("⚠️ Failed to load recent score classifications.")
+
 
 # --- Prediction History ---
 st.subheader("Prediction History")

@@ -23,3 +23,19 @@ SELECT
     WHEN {expenditure} BETWEEN 10000 AND 20000 THEN 'Mid Expenditure'
     ELSE 'High Expenditure'
   END AS expenditure_bracket;
+
+
+-- [recent_scores_with_labels]
+SELECT 
+  score,
+  CASE
+    WHEN score >= 800 THEN '🟢 Excellent'
+    WHEN score >= 740 THEN '🟢 Very Good'
+    WHEN score >= 670 THEN '🟡 Good'
+    WHEN score >= 580 THEN '🟠 Fair'
+    ELSE '🔴 Poor'
+  END AS score_category,
+  timestamp
+FROM predictions
+ORDER BY timestamp DESC
+
