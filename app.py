@@ -94,7 +94,7 @@ if st.button("Predict My Credit Score"):
     user_input = [[r_debt_income, t_expenditure_12, r_debt_savings]]
     user_input_scaled = scaler.transform(user_input)
 
-    prediction = int(round(model.predict(user_input_scaled)[0]))
+    prediction = int(round(svm_model.predict(user_input_scaled)[0]))
     label = classify_score(prediction)
 
     st.success(f"Estimated Credit Score: {prediction}  \nCategory: {label}")
