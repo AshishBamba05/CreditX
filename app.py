@@ -3,26 +3,29 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestRegressor
-import pandas as pd
-from db_utils import insert_prediction, fetch_predictions
 from imblearn.under_sampling import RandomUnderSampler
 import matplotlib.pyplot as plt
+import pandas as pd
+
+from db_utils import (
+    insert_prediction,
+    fetch_predictions,
+    run_sql_query_from_file,
+    get_connection
+)
+
+# --- DB Connection ---
+conn = get_connection()
+cursor = conn.cursor()
 
 # --- Load & Prepare Dataset ---
 df = pd.read_csv("credit_score.csv")
-
 df = df.fillna(df.median(numeric_only=True)).round(0)
 
-FEATURES = [
-    'R_DEBT_INCOME',
-    'T_EXPENDITURE_12',
-    'R_DEBT_SAVINGS'
-]
-
+FEATURES = ['R_DEBT_INCOME', 'T_EXPENDITURE_12', 'R_DEBT_SAVINGS']
 X = df[FEATURES]
 y = df["CREDIT_SCORE"]
 
-# --- Train-Test Split + Scaling ---
 rus = RandomUnderSampler(random_state=42)
 X_resampled, y_resampled = rus.fit_resample(X, y)
 
@@ -34,11 +37,10 @@ scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-# --- Train Model ---
 model = RandomForestRegressor(n_estimators=200, random_state=42)
 model.fit(X_train, y_train)
 
-# --- Feature Importance Plot ---
+# --- Feature Importance ---
 importances = model.feature_importances_
 feat_names = X.columns
 
@@ -47,13 +49,11 @@ plt.barh(feat_names, importances)
 plt.xlabel("Feature Importance")
 plt.title("Random Forest Feature Importance")
 plt.tight_layout()
-
 st.subheader("Feature Importance")
 st.pyplot(plt)
 
-# --- Evaluation Metrics ---
+# --- Model Evaluation ---
 y_pred = model.predict(X_test)
-
 mae = mean_absolute_error(y_test, y_pred)
 mse = mean_squared_error(y_test, y_pred)
 r2 = r2_score(y_test, y_pred)
@@ -70,17 +70,6 @@ debt = st.number_input("Total Debt", min_value=0.0)
 savings = st.number_input("Total Savings", min_value=0.0)
 expenditure = st.number_input("Annual Expenditure", min_value=0.0)
 
-# --- Feature Engineering ---
-r_debt_income = debt / (income + 1)
-t_expenditure_12 = expenditure
-r_debt_savings = debt / (savings + 1)
-
-user_input = [[
-    r_debt_income,
-    t_expenditure_12,
-    r_debt_savings
-]]
-
 def classify_score(score):
     if score >= 800:
         return "🟢 Excellent"
@@ -94,21 +83,43 @@ def classify_score(score):
         return "🔴 Poor"
 
 if st.button("Predict My Credit Score"):
+    # --- Feature Engineering ---
+    r_debt_income = debt / (income + 1)
+    t_expenditure_12 = expenditure
+    r_debt_savings = debt / (savings + 1)
+
+    user_input = [[r_debt_income, t_expenditure_12, r_debt_savings]]
     user_input_scaled = scaler.transform(user_input)
-    prediction = int(model.predict(user_input_scaled)[0])
-    
+
+    prediction = int(round(model.predict(user_input_scaled)[0]))
     label = classify_score(prediction)
+
     st.success(f"Estimated Credit Score: {prediction}  \nCategory: {label}")
 
     insert_prediction(income, debt, savings, expenditure, prediction)
 
+    # --- Bracket Classification ---
+    sql = run_sql_query_from_file("ex_queries.sql", "classify_user",
+                                  income=income,
+                                  debt=debt,
+                                  savings=savings,
+                                  expenditure=expenditure)
 
-# --- Display Past Predictions ---
-st.subheader("Recent Predictions")
-try:
-    prediction_df = fetch_predictions()
+    if sql:
+        bracket_df = pd.read_sql_query(sql, conn)
+        st.subheader("Your Bracket Classification")
+        st.write("Income Bracket:", bracket_df["income_bracket"][0])
+        st.write("Debt Bracket:", bracket_df["debt_bracket"][0])
+        st.write("Savings Bracket:", bracket_df["savings_bracket"][0])
+        st.write("Expenditure Bracket:", bracket_df["expenditure_bracket"][0])
+    else:
+        st.error("⚠️ Couldn't find classification query in ex_queries.sql.")
+
+# --- Prediction History ---
+st.subheader("Prediction History")
+prediction_df = fetch_predictions()
+
+if not prediction_df.empty:
     st.dataframe(prediction_df)
-except Exception as e:
-    st.error(f"Could not load prediction history: {e}")
-
-
+else:
+    st.info("No predictions found yet.")
