@@ -7,7 +7,7 @@ DB_PATH = "creditx_predictions.db"
 def get_connection():
     return sqlite3.connect(DB_PATH)
 
-def insert_prediction(income, debt, savings, expenditure,
+def insert_prediction(income, debt, expenditure,
                       r_debt_income, t_expenditure_12,
                       t_health_12, t_gambling_12,
                       score):
@@ -16,12 +16,12 @@ def insert_prediction(income, debt, savings, expenditure,
 
     cursor.execute("""
     INSERT INTO predictions (
-        income, debt, savings, expenditure,
+        income, debt, expenditure,
         r_debt_income, t_expenditure_12, 
         t_health_12, t_gambling_12, score
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """, (
-        income, debt, savings, expenditure,
+        income, debt, expenditure,
         r_debt_income, t_expenditure_12,
         t_health_12, t_gambling_12, score
     ))
@@ -57,7 +57,6 @@ def fetch_predictions():
         timestamp,
         income,
         debt,
-        savings,
         expenditure,
         r_debt_income,
         t_health_12,

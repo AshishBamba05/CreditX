@@ -51,17 +51,11 @@ mse_train = mean_squared_error(y_train, y_train_pred)
 mse_test = mean_squared_error(y_test, y_test_pred)
 
 # 5. Print
-#print(f"Train MAE: {mae_train:.2f}, Train MSE: {mse_train:.2f}")
 print(f"Test MAE:  {mae_test:.2f}, Test MSE:  {mse_test:.2f}")
 
 r2_train = r2_score(y_train, y_train_pred)
 r2_test = r2_score(y_test, y_test_pred)
 
-#print(f"✅ MAE: {mae:.2f}")
-#print(f"✅ MSE: {mse:.2f}")
-#print(f"✅ R² Score: {r2_test:.3f}")
-
-#print(f"Train R² Score: {r2_train:.3f}")
 print(f"Test R² Score:  {r2_test:.3f}")
 
 # --- Streamlit UI ---
@@ -69,7 +63,6 @@ st.title("Credit Score Predictor | By Ashish V Bamba")
 
 income = st.number_input("Annual Income", min_value=0.0)
 debt = st.number_input("Total Debt", min_value=0.0)
-savings = st.number_input("Total Savings", min_value=0.0)
 expenditure = st.number_input("Annual Expenditure", min_value=0.0)
 health = st.number_input("Annual Health Spend", min_value=0.0)
 gambling = st.number_input("Annual Gambling Spend", min_value=0.0)
@@ -92,7 +85,7 @@ if st.button("Predict My Credit Score"):
 
     # Store prediction
     insert_prediction(
-        income, debt, savings, expenditure,
+        income, debt, expenditure,
         r_debt_income, t_expenditure_12, health,
         t_gambling_12,
         prediction
@@ -134,7 +127,6 @@ if st.button("Predict My Credit Score"):
     sql = run_sql_query_from_file("ex_queries.sql", "classify_user",
                                   income=income,
                                   debt=debt,
-                                  savings=savings,
                                   expenditure=expenditure)
 
     if sql:
@@ -142,7 +134,6 @@ if st.button("Predict My Credit Score"):
         st.subheader("Your Bracket Classification")
         st.write("Income Bracket:", bracket_df["income_bracket"][0])
         st.write("Debt Bracket:", bracket_df["debt_bracket"][0])
-        st.write("Savings Bracket:", bracket_df["savings_bracket"][0])
         st.write("Expenditure Bracket:", bracket_df["expenditure_bracket"][0])
     else:
         st.error("⚠️ Couldn't find classification query in ex_queries.sql.")
@@ -189,7 +180,6 @@ if st.button("Drop & Recreate Prediction Table"):
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             income FLOAT,
             debt FLOAT,
-            savings FLOAT,
             expenditure FLOAT,
             r_debt_income FLOAT,
             t_expenditure_12 FLOAT,
@@ -204,7 +194,7 @@ if st.button("Drop & Recreate Prediction Table"):
 
     st.success("✅ Table has been dropped and recreated.")
     st.dataframe(pd.DataFrame(columns=[
-    "id", "timestamp", "income", "debt", "savings", "expenditure",
+    "id", "timestamp", "income", "debt", "expenditure",
     "r_debt_income", "t_expenditure_12", 't_gambling_12', 
     't_health_12', 
     "score"
