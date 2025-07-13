@@ -23,30 +23,46 @@ cursor = conn.cursor()
 df = pd.read_csv("credit_score.csv")
 df = df.fillna(df.median(numeric_only=True)).round(0)
 
-FEATURES = ['R_DEBT_INCOME', 'T_EXPENDITURE_12', 'R_DEBT_SAVINGS']
+FEATURES = ['R_DEBT_INCOME', 'T_EXPENDITURE_12',
+'T_HEALTH_12', 'T_GAMBLING_12']
 X = df[FEATURES]
 y = df["CREDIT_SCORE"]
 
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.3, random_state=0
+    X, y, test_size=0.25, random_state=42
 )
 
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-svm_model = SVR(kernel='rbf', C=150, epsilon=17)
+svm_model = SVR(kernel='rbf', C=95, epsilon=23, gamma=0.1, verbose=False)
 svm_model.fit(X_train, y_train)
 
 # --- Model Evaluation ---
-y_pred = svm_model.predict(X_test)
-mae = mean_absolute_error(y_test, y_pred)
-mse = mean_squared_error(y_test, y_pred)
-r2 = r2_score(y_test, y_pred)
+y_train_pred = svm_model.predict(X_train)
+y_test_pred = svm_model.predict(X_test)
 
-print(f"✅ MAE: {mae:.2f}")
-print(f"✅ MSE: {mse:.2f}")
-print(f"✅ R² Score: {r2:.3f}")
+# 4. Evaluate
+mae_train = mean_absolute_error(y_train, y_train_pred)
+mae_test = mean_absolute_error(y_test, y_test_pred)
+
+mse_train = mean_squared_error(y_train, y_train_pred)
+mse_test = mean_squared_error(y_test, y_test_pred)
+
+# 5. Print
+#print(f"Train MAE: {mae_train:.2f}, Train MSE: {mse_train:.2f}")
+print(f"Test MAE:  {mae_test:.2f}, Test MSE:  {mse_test:.2f}")
+
+r2_train = r2_score(y_train, y_train_pred)
+r2_test = r2_score(y_test, y_test_pred)
+
+#print(f"✅ MAE: {mae:.2f}")
+#print(f"✅ MSE: {mse:.2f}")
+#print(f"✅ R² Score: {r2_test:.3f}")
+
+#print(f"Train R² Score: {r2_train:.3f}")
+print(f"Test R² Score:  {r2_test:.3f}")
 
 # --- Streamlit UI ---
 st.title("Credit Score Predictor | By Ashish V Bamba")
@@ -55,24 +71,33 @@ income = st.number_input("Annual Income", min_value=0.0)
 debt = st.number_input("Total Debt", min_value=0.0)
 savings = st.number_input("Total Savings", min_value=0.0)
 expenditure = st.number_input("Annual Expenditure", min_value=0.0)
+health = st.number_input("Annual Health Spend", min_value=0.0)
+gambling = st.number_input("Annual Gambling Spend", min_value=0.0)
+
 
 if st.button("Predict My Credit Score"):
     # --- Feature Engineering ---
     r_debt_income = debt / (income + 1)
     t_expenditure_12 = expenditure
-    r_debt_savings = debt / (savings + 1)
+    t_gambling_12 = gambling
 
-    user_input = [[r_debt_income, t_expenditure_12, r_debt_savings]]
+    user_input = [[
+        r_debt_income, t_expenditure_12, health,
+        t_gambling_12, 
+    ]]
     user_input_scaled = scaler.transform(user_input)
 
     prediction = int(round(svm_model.predict(user_input_scaled)[0]))
+    prediction = max(300, min(850, prediction)) 
 
     # Store prediction
     insert_prediction(
         income, debt, savings, expenditure,
-        r_debt_income, t_expenditure_12,
-        r_debt_savings, prediction
+        r_debt_income, t_expenditure_12, health,
+        t_gambling_12,
+        prediction
     )
+
 
     # Fetch labeled prediction from SQL
     latest = fetch_latest_score_with_label()
@@ -168,16 +193,19 @@ if st.button("Drop & Recreate Prediction Table"):
             expenditure FLOAT,
             r_debt_income FLOAT,
             t_expenditure_12 FLOAT,
-            r_debt_savings FLOAT,
+            t_health_12 FLOAT, 
+            t_gambling_12 FLOAT,
             score FLOAT
         )
     """)
+
     conn.commit()
     conn.close()
 
     st.success("✅ Table has been dropped and recreated.")
     st.dataframe(pd.DataFrame(columns=[
-        "id", "timestamp", "income", "debt", "savings",
-        "expenditure", "r_debt_income", "t_expenditure_12",
-        "r_debt_savings", "score"
-    ]))
+    "id", "timestamp", "income", "debt", "savings", "expenditure",
+    "r_debt_income", "t_expenditure_12", 't_gambling_12', 
+    't_health_12', 
+    "score"
+]))

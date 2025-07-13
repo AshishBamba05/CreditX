@@ -8,40 +8,28 @@ def get_connection():
     return sqlite3.connect(DB_PATH)
 
 def insert_prediction(income, debt, savings, expenditure,
-                      r_debt_income, t_expenditure_12,
-                      r_debt_savings, score):
+                      r_debt_income, t_expenditure_12, r_debt_savings,
+                      t_health_12, t_gambling_12,
+                      score):
     conn = sqlite3.connect("creditx_predictions.db")
     cursor = conn.cursor()
 
-    # Auto-create table if it doesn't exist
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS predictions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-            income FLOAT,
-            debt FLOAT,
-            savings FLOAT,
-            expenditure FLOAT,
-            r_debt_income FLOAT,
-            t_expenditure_12 FLOAT,
-            r_debt_savings FLOAT,
-            score FLOAT
-        )
-    """)
-
-    cursor.execute("""
-        INSERT INTO predictions (
-            income, debt, savings, expenditure,
-            r_debt_income, t_expenditure_12, r_debt_savings, score
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO predictions (
+        income, debt, savings, expenditure,
+        r_debt_income, t_expenditure_12,
+        t_gambling_12, score
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         income, debt, savings, expenditure,
-        r_debt_income, t_expenditure_12, r_debt_savings, score
+        r_debt_income, t_expenditure_12, r_debt_savings,
+        t_health_12, t_gambling_12, score
     ))
 
     conn.commit()
     conn.close()
+
+
 
 
 def run_sql_query_from_file(filename, query_label, **kwargs):
