@@ -23,8 +23,12 @@ cursor = conn.cursor()
 df = pd.read_csv("credit_score.csv")
 df = df.fillna(df.median(numeric_only=True)).round(0)
 
-FEATURES = ['R_DEBT_INCOME', 'T_EXPENDITURE_12',
-'T_HEALTH_12', 'T_GAMBLING_12']
+FEATURES = [
+    'R_DEBT_INCOME', 'T_EXPENDITURE_12',
+    'T_HEALTH_12', 'T_GAMBLING_12',
+    'CAT_SAVINGS_ACCOUNT'
+]
+
 X = df[FEATURES]
 y = df["CREDIT_SCORE"]
 
@@ -43,14 +47,12 @@ svm_model.fit(X_train, y_train)
 y_train_pred = svm_model.predict(X_train)
 y_test_pred = svm_model.predict(X_test)
 
-# 4. Evaluate
 mae_train = mean_absolute_error(y_train, y_train_pred)
 mae_test = mean_absolute_error(y_test, y_test_pred)
 
 mse_train = mean_squared_error(y_train, y_train_pred)
 mse_test = mean_squared_error(y_test, y_test_pred)
 
-# 5. Print
 print(f"Test MAE:  {mae_test:.2f}, Test MSE:  {mse_test:.2f}")
 
 r2_train = r2_score(y_train, y_train_pred)
@@ -66,38 +68,36 @@ debt = st.number_input("Total Debt", min_value=0.0)
 expenditure = st.number_input("Annual Expenditure", min_value=0.0)
 health = st.number_input("Annual Health Spend", min_value=0.0)
 gambling = st.number_input("Annual Gambling Spend", min_value=0.0)
-
+has_savings = st.checkbox("Do you have a savings account?")
 
 if st.button("Predict My Credit Score"):
-    # --- Feature Engineering ---
     r_debt_income = debt / (income + 1)
     t_expenditure_12 = expenditure
+    t_health_12 = health
     t_gambling_12 = gambling
+    cat_savings_account = 1 if has_savings else 0
 
     user_input = [[
-        r_debt_income, t_expenditure_12, health,
-        t_gambling_12, 
+        r_debt_income, t_expenditure_12,
+        t_health_12, t_gambling_12,
+        cat_savings_account
     ]]
     user_input_scaled = scaler.transform(user_input)
 
     prediction = int(round(svm_model.predict(user_input_scaled)[0]))
-    prediction = max(300, min(850, prediction)) 
+    prediction = max(300, min(850, prediction))
 
-    # Store prediction
     insert_prediction(
         income, debt, expenditure,
-        r_debt_income, t_expenditure_12, health,
-        t_gambling_12,
-        prediction
+        r_debt_income, t_expenditure_12,
+        t_health_12, t_gambling_12,
+        cat_savings_account, prediction
     )
 
-
-    # Fetch labeled prediction from SQL
     latest = fetch_latest_score_with_label()
     score = int(latest['score'][0])
     label = latest['score_category'][0]
 
-    # Display circular gauge chart
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
         value=score,
@@ -119,11 +119,8 @@ if st.button("Predict My Credit Score"):
         }
     ))
     st.plotly_chart(fig, use_container_width=True)
-
-    # Optional text (can be removed if you just want the gauge)
     st.success(f"Estimated Credit Score: {score}  \nCategory: {label}")
 
-    # --- Bracket Classification ---
     sql = run_sql_query_from_file("ex_queries.sql", "classify_user",
                                   income=income,
                                   debt=debt,
@@ -142,7 +139,6 @@ if st.button("Predict My Credit Score"):
 st.subheader("Prediction History")
 prediction_df = fetch_predictions()
 
-# Apply color to score column using score_category
 def style_by_category(category):
     if 'Excellent' in category:
         return 'color: green'
@@ -183,8 +179,9 @@ if st.button("Drop & Recreate Prediction Table"):
             expenditure FLOAT,
             r_debt_income FLOAT,
             t_expenditure_12 FLOAT,
-            t_health_12 FLOAT, 
+            t_health_12 FLOAT,
             t_gambling_12 FLOAT,
+            cat_savings_account INTEGER,
             score FLOAT
         )
     """)
@@ -194,8 +191,7 @@ if st.button("Drop & Recreate Prediction Table"):
 
     st.success("✅ Table has been dropped and recreated.")
     st.dataframe(pd.DataFrame(columns=[
-    "id", "timestamp", "income", "debt", "expenditure",
-    "r_debt_income", "t_expenditure_12", 't_gambling_12', 
-    't_health_12', 
-    "score"
-]))
+        "id", "timestamp", "income", "debt", "expenditure",
+        "r_debt_income", "t_expenditure_12", "t_health_12",
+        "t_gambling_12", "cat_savings_account", "score"
+    ]))

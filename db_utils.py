@@ -9,7 +9,7 @@ def get_connection():
 
 def insert_prediction(income, debt, expenditure,
                       r_debt_income, t_expenditure_12,
-                      t_health_12, t_gambling_12,
+                      t_health_12, t_gambling_12, cat_savings_account,
                       score):
     conn = get_connection()
     cursor = conn.cursor()
@@ -18,12 +18,12 @@ def insert_prediction(income, debt, expenditure,
     INSERT INTO predictions (
         income, debt, expenditure,
         r_debt_income, t_expenditure_12, 
-        t_health_12, t_gambling_12, score
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        t_health_12, t_gambling_12, cat_savings_account, score
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         income, debt, expenditure,
         r_debt_income, t_expenditure_12,
-        t_health_12, t_gambling_12, score
+        t_health_12, t_gambling_12, cat_savings_account, score
     ))
 
     conn.commit()
@@ -62,6 +62,7 @@ def fetch_predictions():
         t_health_12,
         t_gambling_12,
         t_expenditure_12,
+        cat_savings_account,
         score,
         CASE
             WHEN score >= 800 THEN '🟢 Excellent'
