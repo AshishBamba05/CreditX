@@ -26,7 +26,7 @@ df = df.fillna(df.median(numeric_only=True)).round(0)
 FEATURES = [
     'R_DEBT_INCOME', 'T_EXPENDITURE_12',
     'T_HEALTH_12', 'T_GAMBLING_12',
-    'CAT_SAVINGS_ACCOUNT'
+    'CAT_SAVINGS_ACCOUNT', 'R_HOUSING_DEBT'
 ]
 
 X = df[FEATURES]
@@ -54,10 +54,8 @@ mse_train = mean_squared_error(y_train, y_train_pred)
 mse_test = mean_squared_error(y_test, y_test_pred)
 
 print(f"Test MAE:  {mae_test:.2f}, Test MSE:  {mse_test:.2f}")
-
 r2_train = r2_score(y_train, y_train_pred)
 r2_test = r2_score(y_test, y_test_pred)
-
 print(f"Test R² Score:  {r2_test:.3f}")
 
 # --- Streamlit UI ---
@@ -68,6 +66,7 @@ debt = st.number_input("Total Debt", min_value=0.0)
 expenditure = st.number_input("Annual Expenditure", min_value=0.0)
 health = st.number_input("Annual Health Spend", min_value=0.0)
 gambling = st.number_input("Annual Gambling Spend", min_value=0.0)
+housing = st.number_input("Annual Housing Spend", min_value=0.0)
 has_savings = st.checkbox("Do you have a savings account?")
 
 if st.button("Predict My Credit Score"):
@@ -75,12 +74,13 @@ if st.button("Predict My Credit Score"):
     t_expenditure_12 = expenditure
     t_health_12 = health
     t_gambling_12 = gambling
+    r_housing_debt = housing / (debt + 1)
     cat_savings_account = 1 if has_savings else 0
 
     user_input = [[
         r_debt_income, t_expenditure_12,
         t_health_12, t_gambling_12,
-        cat_savings_account
+        cat_savings_account, r_housing_debt
     ]]
     user_input_scaled = scaler.transform(user_input)
 
@@ -91,7 +91,8 @@ if st.button("Predict My Credit Score"):
         income, debt, expenditure,
         r_debt_income, t_expenditure_12,
         t_health_12, t_gambling_12,
-        cat_savings_account, prediction
+        cat_savings_account, r_housing_debt,
+        prediction
     )
 
     latest = fetch_latest_score_with_label()
@@ -182,6 +183,7 @@ if st.button("Drop & Recreate Prediction Table"):
             t_health_12 FLOAT,
             t_gambling_12 FLOAT,
             cat_savings_account INTEGER,
+            r_housing_debt FLOAT,
             score FLOAT
         )
     """)
@@ -193,5 +195,5 @@ if st.button("Drop & Recreate Prediction Table"):
     st.dataframe(pd.DataFrame(columns=[
         "id", "timestamp", "income", "debt", "expenditure",
         "r_debt_income", "t_expenditure_12", "t_health_12",
-        "t_gambling_12", "cat_savings_account", "score"
+        "t_gambling_12", "cat_savings_account", "r_housing_debt", "score"
     ]))
