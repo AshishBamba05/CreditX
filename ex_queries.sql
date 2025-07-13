@@ -38,3 +38,4 @@ SELECT
   timestamp
 FROM predictions
 ORDER BY timestamp DESC
+LIMIT 1

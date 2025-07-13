@@ -2,27 +2,27 @@ import sqlite3
 import pandas as pd
 import re
 
-DB_PATH = "predictions.db"
+DB_PATH = "creditx_predictions.db"
 
 def get_connection():
     return sqlite3.connect(DB_PATH)
 
 def insert_prediction(income, debt, savings, expenditure,
-                      r_debt_income, t_expenditure_12, r_debt_savings,
+                      r_debt_income, t_expenditure_12,
                       t_health_12, t_gambling_12,
                       score):
-    conn = sqlite3.connect("creditx_predictions.db")
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
     INSERT INTO predictions (
         income, debt, savings, expenditure,
-        r_debt_income, t_expenditure_12, r_debt_savings,
+        r_debt_income, t_expenditure_12, 
         t_health_12, t_gambling_12, score
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         income, debt, savings, expenditure,
-        r_debt_income, t_expenditure_12, r_debt_savings,
+        r_debt_income, t_expenditure_12,
         t_health_12, t_gambling_12, score
     ))
 
@@ -30,13 +30,10 @@ def insert_prediction(income, debt, savings, expenditure,
     conn.close()
 
 
-
-
 def run_sql_query_from_file(filename, query_label, **kwargs):
     with open(filename, "r") as file:
         sql_script = file.read()
 
-    # Match -- [label] until next label or end of file
     pattern = rf"-- \[{query_label}\]\s*(.*?)(?=\n-- \[|$)"
     match = re.search(pattern, sql_script, re.DOTALL)
 
@@ -46,14 +43,13 @@ def run_sql_query_from_file(filename, query_label, **kwargs):
 
     sql = match.group(1).strip()
 
-    # Replace any {placeholders} with actual values
     for key, val in kwargs.items():
         sql = sql.replace(f"{{{key}}}", str(val))
 
     return sql
 
 def fetch_predictions():
-    conn = sqlite3.connect("creditx_predictions.db")
+    conn = get_connection()
     query = """
     SELECT 
         id,
@@ -63,8 +59,9 @@ def fetch_predictions():
         savings,
         expenditure,
         r_debt_income,
+        t_health_12,
+        t_gambling_12,
         t_expenditure_12,
-        r_debt_savings,
         score,
         CASE
             WHEN score >= 800 THEN '🟢 Excellent'
@@ -78,8 +75,7 @@ def fetch_predictions():
     """
     return pd.read_sql_query(query, conn)
 
-
 def fetch_latest_score_with_label():
     sql = run_sql_query_from_file("ex_queries.sql", "latest_score_with_label")
-    conn = sqlite3.connect("creditx_predictions.db")
+    conn = get_connection()
     return pd.read_sql_query(sql, conn)
