@@ -17,8 +17,8 @@ def insert_prediction(income, debt, savings, expenditure,
     cursor.execute("""
     INSERT INTO predictions (
         income, debt, savings, expenditure,
-        r_debt_income, t_expenditure_12,
-        t_gambling_12, score
+        r_debt_income, t_expenditure_12, r_debt_savings,
+        t_health_12, t_gambling_12, score
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         income, debt, savings, expenditure,
