@@ -48,7 +48,7 @@ print(f"✅ MSE: {mse:.2f}")
 print(f"✅ R² Score: {r2:.3f}")
 
 # --- Streamlit UI ---
-st.title("Credit Score Predictor")
+st.title("Credit Score Predictor | By Ashish V Bamba")
 
 income = st.number_input("Annual Income", min_value=0.0)
 debt = st.number_input("Total Debt", min_value=0.0)
