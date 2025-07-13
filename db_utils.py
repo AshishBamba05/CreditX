@@ -89,3 +89,9 @@ def fetch_predictions():
     ORDER BY timestamp DESC
     """
     return pd.read_sql_query(query, conn)
+
+
+def fetch_latest_score_with_label():
+    sql = run_sql_query_from_file("ex_queries.sql", "latest_score_with_label")
+    conn = sqlite3.connect("creditx_predictions.db")
+    return pd.read_sql_query(sql, conn)

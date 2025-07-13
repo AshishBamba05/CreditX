@@ -3,13 +3,14 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR
-import matplotlib.pyplot as plt
 import pandas as pd
 import sqlite3
+import plotly.graph_objects as go
 
 from db_utils import (
     insert_prediction,
     fetch_predictions,
+    fetch_latest_score_with_label,
     run_sql_query_from_file,
     get_connection
 )
@@ -73,7 +74,36 @@ if st.button("Predict My Credit Score"):
         r_debt_savings, prediction
     )
 
-    st.success(f"Estimated Credit Score: {prediction}")
+    # Fetch labeled prediction from SQL
+    latest = fetch_latest_score_with_label()
+    score = int(latest['score'][0])
+    label = latest['score_category'][0]
+
+    # Display circular gauge chart
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=score,
+        domain={'x': [0, 1], 'y': [0, 1]},
+        title={'text': label, 'font': {'size': 24}},
+        gauge={
+            'axis': {'range': [300, 850], 'tickwidth': 1, 'tickcolor': "darkgray"},
+            'bar': {'color': "green"},
+            'bgcolor': "white",
+            'borderwidth': 2,
+            'bordercolor': "gray",
+            'steps': [
+                {'range': [300, 580], 'color': "#FF4B4B"},
+                {'range': [580, 670], 'color': "#FFA500"},
+                {'range': [670, 740], 'color': "#FFD700"},
+                {'range': [740, 800], 'color': "#90EE90"},
+                {'range': [800, 850], 'color': "#00FF00"}
+            ]
+        }
+    ))
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Optional text (can be removed if you just want the gauge)
+    st.success(f"Estimated Credit Score: {score}  \nCategory: {label}")
 
     # --- Bracket Classification ---
     sql = run_sql_query_from_file("ex_queries.sql", "classify_user",
