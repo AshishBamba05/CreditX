@@ -2,12 +2,10 @@ import streamlit as st
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.svm import SVR
 import matplotlib.pyplot as plt
 import pandas as pd
-from sklearn.svm import SVR
 import sqlite3
-
 
 from db_utils import (
     insert_prediction,
@@ -28,9 +26,6 @@ FEATURES = ['R_DEBT_INCOME', 'T_EXPENDITURE_12', 'R_DEBT_SAVINGS']
 X = df[FEATURES]
 y = df["CREDIT_SCORE"]
 
-#rus = RandomUnderSampler(random_state=42)
-#X_resampled, y_resampled = rus.fit_resample(X, y)
-
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.3, random_state=0
 )
@@ -42,21 +37,8 @@ X_test = scaler.transform(X_test)
 svm_model = SVR(kernel='rbf', C=150, epsilon=17)
 svm_model.fit(X_train, y_train)
 
-# --- Feature Importance ---
-#importances = model.feature_importances_
-#feat_names = X.columns
-
-#plt.figure(figsize=(10, 6))
-#plt.barh(feat_names, importances)
-#plt.xlabel("Feature Importance")
-#plt.title("Random Forest Feature Importance")
-#plt.tight_layout()
-#st.subheader("Feature Importance")
-#st.pyplot(plt)
-
 # --- Model Evaluation ---
 y_pred = svm_model.predict(X_test)
-#y_pred = model.predict(X_test)
 mae = mean_absolute_error(y_test, y_pred)
 mse = mean_squared_error(y_test, y_pred)
 r2 = r2_score(y_test, y_pred)
@@ -73,19 +55,6 @@ debt = st.number_input("Total Debt", min_value=0.0)
 savings = st.number_input("Total Savings", min_value=0.0)
 expenditure = st.number_input("Annual Expenditure", min_value=0.0)
 
-def classify_score(score):
-    if score >= 800:
-        return "🟢 Excellent"
-    elif score >= 740:
-        return "🟢 Very Good"
-    elif score >= 670:
-        return "🟡 Good"
-    elif score >= 580:
-        return "🟠 Fair"
-    else:
-        return "🔴 Poor"
-
-
 if st.button("Predict My Credit Score"):
     # --- Feature Engineering ---
     r_debt_income = debt / (income + 1)
@@ -96,14 +65,15 @@ if st.button("Predict My Credit Score"):
     user_input_scaled = scaler.transform(user_input)
 
     prediction = int(round(svm_model.predict(user_input_scaled)[0]))
-    label = classify_score(prediction)
 
-    st.success(f"Estimated Credit Score: {prediction}  \nCategory: {label}")
+    # Store prediction
+    insert_prediction(
+        income, debt, savings, expenditure,
+        r_debt_income, t_expenditure_12,
+        r_debt_savings, prediction
+    )
 
-    insert_prediction(income, debt, savings, expenditure,
-                  r_debt_income, t_expenditure_12,
-                  r_debt_savings, prediction)
-
+    st.success(f"Estimated Credit Score: {prediction}")
 
     # --- Bracket Classification ---
     sql = run_sql_query_from_file("ex_queries.sql", "classify_user",
@@ -122,33 +92,41 @@ if st.button("Predict My Credit Score"):
     else:
         st.error("⚠️ Couldn't find classification query in ex_queries.sql.")
 
-
-st.subheader("Recent Scores with Category Labels")
-recent_scores_sql = run_sql_query_from_file("ex_queries.sql", "recent_scores_with_labels")
-
-if recent_scores_sql:
-    df = pd.read_sql_query(recent_scores_sql, conn)
-    st.dataframe(df)
-else:
-    st.error("⚠️ Failed to load recent score classifications.")
-
-
 # --- Prediction History ---
 st.subheader("Prediction History")
 prediction_df = fetch_predictions()
 
+# Apply color to score column using score_category
+def style_by_category(category):
+    if 'Excellent' in category:
+        return 'color: green'
+    elif 'Very Good' in category:
+        return 'color: limegreen'
+    elif 'Good' in category:
+        return 'color: goldenrod'
+    elif 'Fair' in category:
+        return 'color: darkorange'
+    elif 'Poor' in category:
+        return 'color: red'
+    return ''
+
 if not prediction_df.empty:
-    st.dataframe(prediction_df)
+    styled_df = prediction_df.style.apply(
+        lambda row: [
+            style_by_category(row['score_category']) if col == 'score' else ''
+            for col in prediction_df.columns
+        ],
+        axis=1
+    )
+    st.dataframe(styled_df)
 else:
     st.info("No predictions yet.")
 
-
-
+# --- Drop & Recreate Table ---
 if st.button("Drop & Recreate Prediction Table"):
     conn = sqlite3.connect("creditx_predictions.db")
     cursor = conn.cursor()
 
-    # Drop and recreate the correct schema
     cursor.execute("DROP TABLE IF EXISTS predictions")
     cursor.execute("""
         CREATE TABLE predictions (
@@ -173,4 +151,3 @@ if st.button("Drop & Recreate Prediction Table"):
         "expenditure", "r_debt_income", "t_expenditure_12",
         "r_debt_savings", "score"
     ]))
-

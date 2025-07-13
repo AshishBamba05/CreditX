@@ -44,20 +44,6 @@ def insert_prediction(income, debt, savings, expenditure,
     conn.close()
 
 
-def fetch_predictions():
-    conn = sqlite3.connect("creditx_predictions.db")
-    cursor = conn.cursor()
-    try:
-        cursor.execute("SELECT * FROM predictions")
-        rows = cursor.fetchall()
-        columns = [desc[0] for desc in cursor.description]
-        return pd.DataFrame(rows, columns=columns)
-    except sqlite3.OperationalError:
-        return pd.DataFrame()
-    finally:
-        conn.close()
-
-
 def run_sql_query_from_file(filename, query_label, **kwargs):
     with open(filename, "r") as file:
         sql_script = file.read()
@@ -77,3 +63,29 @@ def run_sql_query_from_file(filename, query_label, **kwargs):
         sql = sql.replace(f"{{{key}}}", str(val))
 
     return sql
+
+def fetch_predictions():
+    conn = sqlite3.connect("creditx_predictions.db")
+    query = """
+    SELECT 
+        id,
+        timestamp,
+        income,
+        debt,
+        savings,
+        expenditure,
+        r_debt_income,
+        t_expenditure_12,
+        r_debt_savings,
+        score,
+        CASE
+            WHEN score >= 800 THEN '🟢 Excellent'
+            WHEN score >= 740 THEN '🟢 Very Good'
+            WHEN score >= 670 THEN '🟡 Good'
+            WHEN score >= 580 THEN '🟠 Fair'
+            ELSE '🔴 Poor'
+        END AS score_category
+    FROM predictions
+    ORDER BY timestamp DESC
+    """
+    return pd.read_sql_query(query, conn)

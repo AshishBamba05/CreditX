@@ -25,7 +25,7 @@ SELECT
   END AS expenditure_bracket;
 
 
--- [recent_scores_with_labels]
+-- [latest_score_with_label]
 SELECT 
   score,
   CASE
@@ -38,5 +38,3 @@ SELECT
   timestamp
 FROM predictions
 ORDER BY timestamp DESC
-LIMIT 5
-
