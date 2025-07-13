@@ -19,7 +19,7 @@ def insert_prediction(income, debt, savings, expenditure,
         income, debt, savings, expenditure,
         r_debt_income, t_expenditure_12, 
         t_health_12, t_gambling_12, score
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         income, debt, savings, expenditure,
         r_debt_income, t_expenditure_12,
@@ -48,6 +48,7 @@ def run_sql_query_from_file(filename, query_label, **kwargs):
 
     return sql
 
+
 def fetch_predictions():
     conn = get_connection()
     query = """
@@ -74,6 +75,7 @@ def fetch_predictions():
     ORDER BY timestamp DESC
     """
     return pd.read_sql_query(query, conn)
+
 
 def fetch_latest_score_with_label():
     sql = run_sql_query_from_file("ex_queries.sql", "latest_score_with_label")
