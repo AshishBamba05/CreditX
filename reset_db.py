@@ -12,12 +12,13 @@ cursor.execute("""
         income FLOAT,
         debt FLOAT,
         expenditure FLOAT,
-        r_debt_income FLOAT,
         t_expenditure_12 FLOAT,
+        r_debt_income FLOAT,
         t_health_12 FLOAT,
         t_gambling_12 FLOAT,
         cat_savings_account INTEGER,
         r_housing_debt FLOAT,
+        r_expenditure FLOAT,
         score FLOAT
     )
 """)
@@ -25,4 +26,4 @@ cursor.execute("""
 conn.commit()
 conn.close()
 
-print("✅ New DB created with cat_savings_account and r_housing_debt columns.")
+print("✅ New DB created with cat_savings_account and r_housing_debt columns and r_expenditure column.")
