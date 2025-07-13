@@ -15,7 +15,6 @@ Once the input features are extracted, the model applies feature engineering to 
 
 - `r_debt_income = debt / (income + 1)` — normalized debt-to-income ratio  
 - `t_expenditure_12 = expenditure` — annual expenditure baseline  
-- `debt_savings = debt / (savings + 1)` — debt-to-savings ratio with smoothing
 - `t_gambling_12 = gambling` - annual gambling expenditure
 - `t_health_12 = gambling` - annual health expenditure
 
