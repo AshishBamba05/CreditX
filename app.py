@@ -74,6 +74,25 @@ for _ in range(10):
 df_synthetic = pd.DataFrame(synthetic_samples)
 df_balanced = pd.concat([df_balanced, df_synthetic], ignore_index=True)
 
+# Add 15 synthetics for very risky profiles
+poor_samples = []
+for _ in range(15):
+    poor_samples.append({
+        "R_DEBT_INCOME": np.random.uniform(1.5, 5.0),  # Very high ratio
+        "T_EXPENDITURE_12": np.random.uniform(5000, 15000),
+        "T_HEALTH_12": np.random.uniform(500, 1500),
+        "T_GAMBLING_12": np.random.uniform(2000, 5000),
+        "CAT_SAVINGS_ACCOUNT": 0,
+        "R_HOUSING_DEBT": np.random.uniform(0.8, 1.2),
+        "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
+        "R_EDUCATION": np.random.uniform(0.48, 0.52),
+        "CREDIT_SCORE": np.random.randint(300, 520)  # Force into poor
+    })
+
+df_poor = pd.DataFrame(poor_samples)
+df_balanced = pd.concat([df_balanced, df_poor], ignore_index=True)
+
+
 
 X = df_balanced[FEATURES]
 y = df_balanced["CREDIT_SCORE"]
