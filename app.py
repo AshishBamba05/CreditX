@@ -173,7 +173,7 @@ X_cat = X[["CAT_SAVINGS_ACCOUNT"]].values  # keep as raw 0/1
 
 # Train/test split
 X_train_cont, X_test_cont, X_train_cat, X_test_cat, y_train, y_test = train_test_split(
-    X_continuous, X_cat, y, test_size=0.3, random_state=42
+    X_continuous, X_cat, y, test_size=0.25, random_state=42
 )
 
 # Scale only continuous features
