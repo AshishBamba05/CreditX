@@ -58,6 +58,19 @@ for _ in range(10):
         "CREDIT_SCORE": np.random.randint(810, 850)
     })
 
+for _ in range(10):
+    synthetic_samples.append({
+        "R_DEBT_INCOME": 0.0,
+        "T_EXPENDITURE_12": 0.0,
+        "T_HEALTH_12": 0.0,
+        "T_GAMBLING_12": 0.0,
+        "CAT_SAVINGS_ACCOUNT": 1,
+        "R_HOUSING_DEBT": 0.0,
+        "R_EXPENDITURE": 0.0,
+        "R_EDUCATION": 0.0,
+        "CREDIT_SCORE": 835
+    })
+
 df_synthetic = pd.DataFrame(synthetic_samples)
 df_balanced = pd.concat([df_balanced, df_synthetic], ignore_index=True)
 
