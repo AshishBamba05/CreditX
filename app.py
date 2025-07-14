@@ -76,7 +76,7 @@ df_balanced = pd.concat([df_balanced, df_synthetic], ignore_index=True)
 
 # Add 15 synthetics for very risky profiles
 poor_samples = []
-for _ in range(15):
+for _ in range(35):
     poor_samples.append({
         "R_DEBT_INCOME": np.random.uniform(1.5, 5.0),  # Very high ratio
         "T_EXPENDITURE_12": np.random.uniform(5000, 15000),
@@ -92,6 +92,23 @@ for _ in range(15):
 df_poor = pd.DataFrame(poor_samples)
 df_balanced = pd.concat([df_balanced, df_poor], ignore_index=True)
 
+debt_only_samples = []
+for _ in range(35):
+    income = 0
+    debt = np.random.uniform(50000, 150000)
+    debt_only_samples.append({
+        "R_DEBT_INCOME": min(debt / (income + 1), 5),
+        "T_EXPENDITURE_12": 0,
+        "T_HEALTH_12": 0,
+        "T_GAMBLING_12": 0,
+        "CAT_SAVINGS_ACCOUNT": 0,
+        "R_HOUSING_DEBT": np.log1p(min(np.random.uniform(0, 1.5), 1.24)),
+        "R_EXPENDITURE": 0,
+        "R_EDUCATION": 0,
+        "CREDIT_SCORE": np.random.randint(300, 520)
+    })
+df_debt_only = pd.DataFrame(debt_only_samples)
+df_balanced = pd.concat([df_balanced, df_debt_only], ignore_index=True)
 
 
 X = df_balanced[FEATURES]
@@ -149,7 +166,7 @@ education_6 = st.number_input("6-Month Education Spend", min_value=0.0)
 has_savings = st.checkbox("Do you have a savings account?")
 
 if st.button("Predict My Credit Score"):
-    r_debt_income = min(debt / (income + 1), 5)
+    r_debt_income = np.log1p(debt / (income + 1))
     t_expenditure_12 = expenditure_12
     t_expenditure_6 = expenditure_6
     t_health_12 = health
