@@ -9,7 +9,7 @@ def get_connection():
 
 def insert_prediction(income, debt,
                       r_debt_income, t_expenditure_12,
-                      t_health_12, t_gambling_12,
+                      t_gambling_12,
                       cat_savings_account, r_housing_debt,
                       r_expenditure, r_education,
                       score):
@@ -20,7 +20,7 @@ def insert_prediction(income, debt,
     INSERT INTO predictions (
         income, debt,
         r_debt_income, t_expenditure_12,
-        t_health_12, t_gambling_12,
+        t_gambling_12,
         cat_savings_account, r_housing_debt,
         r_expenditure, r_education,
         score
@@ -28,7 +28,7 @@ def insert_prediction(income, debt,
     """, (
         income, debt,
         r_debt_income, t_expenditure_12,
-        t_health_12, t_gambling_12,
+        t_gambling_12,
         cat_savings_account, r_housing_debt,
         r_expenditure, r_education,
         score

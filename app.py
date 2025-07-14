@@ -33,7 +33,7 @@ df["R_EDUCATION"] = df["R_EDUCATION"].clip(upper=1.5)
 FEATURES = [
     'R_DEBT_INCOME', 
     'T_EXPENDITURE_12',
-    'T_HEALTH_12', 'T_GAMBLING_12',
+    'T_GAMBLING_12',
     'CAT_SAVINGS_ACCOUNT', 'R_HOUSING_DEBT',
     'R_EXPENDITURE', 'R_EDUCATION'
 ]
@@ -52,7 +52,6 @@ for _ in range(10):
     highCred_samples.append({
         "R_DEBT_INCOME": np.random.uniform(0.0, 0.02),
         "T_EXPENDITURE_12": np.random.uniform(35000, 48000),
-        "T_HEALTH_12": np.random.uniform(1500, 2500),
         "T_GAMBLING_12": 0,
         "CAT_SAVINGS_ACCOUNT": 1,
         "R_HOUSING_DEBT": np.random.uniform(0.65, 0.78),
@@ -69,7 +68,6 @@ for _ in range(10):
     goodSavings_samples.append({
         "R_DEBT_INCOME": 0.0,
         "T_EXPENDITURE_12": 0.0,
-        "T_HEALTH_12": 0.0,
         "T_GAMBLING_12": 0.0,
         "CAT_SAVINGS_ACCOUNT": 1,
         "R_HOUSING_DEBT": 0.0,
@@ -87,7 +85,6 @@ for _ in range(20):
     badSavings_samples.append({
         "R_DEBT_INCOME": np.random.uniform(2.5, 4.5),
         "T_EXPENDITURE_12": np.random.uniform(5000, 12000),
-        "T_HEALTH_12": np.random.uniform(500, 1000),
         "T_GAMBLING_12": np.random.uniform(3000, 6000),
         "CAT_SAVINGS_ACCOUNT": 1,
         "R_HOUSING_DEBT": np.random.uniform(0.9, 1.2),
@@ -105,7 +102,6 @@ for _ in range(20):
     midCredit_samples.append({
         "R_DEBT_INCOME": np.random.uniform(0.01, 0.03),
         "T_EXPENDITURE_12": np.random.uniform(25000, 40000),
-        "T_HEALTH_12": np.random.uniform(1500, 3000),
         "T_GAMBLING_12": 0,
         "CAT_SAVINGS_ACCOUNT": 0,
         "R_HOUSING_DEBT": np.random.uniform(0.6, 0.7),
@@ -123,7 +119,6 @@ for _ in range(35):
     poor_samples.append({
         "R_DEBT_INCOME": np.random.uniform(1.5, 5.0),  # Very high ratio
         "T_EXPENDITURE_12": np.random.uniform(5000, 15000),
-        "T_HEALTH_12": np.random.uniform(500, 1500),
         "T_GAMBLING_12": np.random.uniform(2000, 5000),
         "CAT_SAVINGS_ACCOUNT": 0,
         "R_HOUSING_DEBT": np.random.uniform(0.8, 1.2),
@@ -142,7 +137,6 @@ for _ in range(35):
     debt_only_samples.append({
         "R_DEBT_INCOME": min(debt / (income + 1), 5),
         "T_EXPENDITURE_12": 0,
-        "T_HEALTH_12": 0,
         "T_GAMBLING_12": 0,
         "CAT_SAVINGS_ACCOUNT": 0,
         "R_HOUSING_DEBT": np.log1p(min(np.random.uniform(0, 1.5), 1.24)),
@@ -159,7 +153,6 @@ for _ in range(30):
     gambling_risk_samples.append({
         "R_DEBT_INCOME": np.random.uniform(1.0, 3.5),
         "T_EXPENDITURE_12": np.random.uniform(15000, 30000),
-        "T_HEALTH_12": np.random.uniform(500, 1500),
         "T_GAMBLING_12": np.random.uniform(8000, 20000),
         "CAT_SAVINGS_ACCOUNT": 0,
         "R_HOUSING_DEBT": np.random.uniform(0.85, 1.3),
@@ -176,7 +169,6 @@ for _ in range(30):
     excellent_samples.append({
         "R_DEBT_INCOME": np.random.uniform(0.01, 0.05),
         "T_EXPENDITURE_12": np.random.uniform(38000, 50000),
-        "T_HEALTH_12": np.random.uniform(2000, 3000),
         "T_GAMBLING_12": 0,
         "CAT_SAVINGS_ACCOUNT": 1,
         "R_HOUSING_DEBT": np.random.uniform(0.60, 0.75),
@@ -211,18 +203,12 @@ X_test_scaled_cont = scaler.transform(X_test_cont)
 X_train_final = np.hstack([X_train_scaled_cont, X_train_cat])
 X_test_final = np.hstack([X_test_scaled_cont, X_test_cat])
 
-
-#svm_model = SVR(kernel='rbf', C=95, epsilon=23, gamma=0.1, verbose=False)
-#svm_model.fit(X_train_final, y_train)
-
 rf_model = RandomForestRegressor(n_estimators=115, max_depth=8, random_state=42)
 rf_model.fit(X_train_final, y_train)
 
 # --- Model Evaluation ---
 y_train_pred = rf_model.predict(X_train_final)
-# svm_model.predict(X_train_final)
 y_test_pred = rf_model.predict(X_test_final)
-#svm_model.predict(X_test_final)
 
 mae_train = mean_absolute_error(y_train, y_train_pred)
 mae_test = mean_absolute_error(y_test, y_test_pred)
@@ -241,7 +227,6 @@ income = st.number_input("Annual Income", min_value=0.0)
 debt = st.number_input("Total Debt", min_value=0.0)
 expenditure_12 = st.number_input("12-Month Expenditure", min_value=0.0)
 expenditure_6 = st.number_input("6-Month Expenditure", min_value=0.0)
-health = st.number_input("Annual Health Spend", min_value=0.0)
 gambling = st.number_input("Annual Gambling Spend", min_value=0.0)
 housing = st.number_input("Annual Housing Spend", min_value=0.0)
 education_12 = st.number_input("12-Month Education Spend", min_value=0.0)
@@ -252,7 +237,6 @@ if st.button("Predict My Credit Score"):
     r_debt_income = np.log1p(debt / (income + 1))
     t_expenditure_12 = expenditure_12
     t_expenditure_6 = expenditure_6
-    t_health_12 = health
     t_gambling_12 = gambling
     r_housing_debt = np.log1p(min(housing / (debt + 1), 1.24))
     cat_savings_account = 1 if has_savings else 0
@@ -261,7 +245,7 @@ if st.button("Predict My Credit Score"):
 
     user_input_cont = [[
     r_debt_income, t_expenditure_12,
-    t_health_12, t_gambling_12,
+    t_gambling_12,
     r_housing_debt,
     r_expenditure, r_education
 ]]
@@ -281,7 +265,7 @@ if st.button("Predict My Credit Score"):
     insert_prediction(
         income, debt, 
         r_debt_income, t_expenditure_12,
-        t_health_12, t_gambling_12,
+        t_gambling_12,
         cat_savings_account, r_housing_debt,
         r_expenditure, r_education, prediction
     )
@@ -289,7 +273,8 @@ if st.button("Predict My Credit Score"):
     zero_fields = 0
 
     fields_to_check = [
-        income, debt, expenditure_12, expenditure_6, health,  gambling, housing, education_12, education_6, has_savings
+        income, debt, expenditure_12, expenditure_6,  
+        gambling, housing, education_12, education_6, has_savings
     ]
 
     for val in fields_to_check:
@@ -384,7 +369,6 @@ if st.button("Drop & Recreate Prediction Table"):
             debt FLOAT,
             t_expenditure_12 FLOAT,
             r_debt_income FLOAT,
-            t_health_12 FLOAT,
             t_gambling_12 FLOAT,
             cat_savings_account INTEGER,
             r_housing_debt FLOAT,
@@ -400,7 +384,7 @@ if st.button("Drop & Recreate Prediction Table"):
     st.success("✅ Table has been dropped and recreated.")
     st.dataframe(pd.DataFrame(columns=[
         "id", "timestamp", "income", "debt",
-        "r_debt_income", "t_health_12", "t_expenditure_12",
+        "r_debt_income", "t_expenditure_12",
         "t_gambling_12", "cat_savings_account", "r_housing_debt",
         "r_expenditure", "r_education", "score"
     ]))
