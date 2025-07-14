@@ -146,8 +146,6 @@ df_excellent = pd.DataFrame(excellent_samples)
 df_balanced = pd.concat([df_balanced, df_excellent], ignore_index=True)
 
 
-
-
 X = df_balanced[FEATURES]
 y = df_balanced["CREDIT_SCORE"]
 print(df_balanced["CREDIT_SCORE"].describe())
@@ -239,6 +237,20 @@ if st.button("Predict My Credit Score"):
         cat_savings_account, r_housing_debt,
         r_expenditure, r_education, prediction
     )
+
+    zero_fields = 0
+
+    fields_to_check = [
+        income, debt, expenditure_12, expenditure_6, health,  gambling, housing, education_12, education_6, has_savings
+    ]
+
+    for val in fields_to_check:
+        if val == 0:
+            zero_fields += 1
+
+    if zero_fields >= 5:
+        st.warning("⚠️ Your inputs contain many zero values. This may result in an inaccurate prediction. Try entering realistic estimates for typical expenses (e.g. health, housing, education).")
+
 
     latest = fetch_latest_score_with_label()
     score = int(latest['score'][0])
