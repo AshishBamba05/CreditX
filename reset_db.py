@@ -13,12 +13,9 @@ cursor.execute("""
         debt FLOAT,
         t_expenditure_12 FLOAT,
         r_debt_income FLOAT,
-        t_health_12 FLOAT,
         t_gambling_12 FLOAT,
         cat_savings_account INTEGER,
-        r_housing_debt FLOAT,
         r_expenditure FLOAT,
-        r_education FLOAT,
         score FLOAT
     )
 """)

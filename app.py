@@ -26,16 +26,14 @@ df = pd.read_csv("credit_score.csv")
 df = df.fillna(df.median(numeric_only=True)).round(0)
 
 df["R_EXPENDITURE"] = df["T_EXPENDITURE_6"] / (df["T_EXPENDITURE_12"] + 1)
-df["R_EDUCATION"] = df["T_EDUCATION_6"] / (df["T_EDUCATION_12"] + 1)
-df["R_EDUCATION"] = df["R_EDUCATION"].clip(upper=1.5)
 
 
 FEATURES = [
     'R_DEBT_INCOME', 
     'T_EXPENDITURE_12',
     'T_GAMBLING_12',
-    'CAT_SAVINGS_ACCOUNT', 'R_HOUSING_DEBT',
-    'R_EXPENDITURE', 'R_EDUCATION'
+    'CAT_SAVINGS_ACCOUNT', 
+    'R_EXPENDITURE',
 ]
 
 # Oversample high-credit samples
@@ -54,9 +52,7 @@ for _ in range(10):
         "T_EXPENDITURE_12": np.random.uniform(35000, 48000),
         "T_GAMBLING_12": 0,
         "CAT_SAVINGS_ACCOUNT": 1,
-        "R_HOUSING_DEBT": np.random.uniform(0.65, 0.78),
         "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
-        "R_EDUCATION": np.random.uniform(0.48, 0.52),
         "CREDIT_SCORE": np.random.randint(810, 850)
     })
 df_highCred = pd.DataFrame(highCred_samples)
@@ -70,9 +66,7 @@ for _ in range(10):
         "T_EXPENDITURE_12": 0.0,
         "T_GAMBLING_12": 0.0,
         "CAT_SAVINGS_ACCOUNT": 1,
-        "R_HOUSING_DEBT": 0.0,
         "R_EXPENDITURE": 0.0,
-        "R_EDUCATION": 0.0,
         "CREDIT_SCORE": 835
     })
 
@@ -87,9 +81,7 @@ for _ in range(20):
         "T_EXPENDITURE_12": np.random.uniform(5000, 12000),
         "T_GAMBLING_12": np.random.uniform(3000, 6000),
         "CAT_SAVINGS_ACCOUNT": 1,
-        "R_HOUSING_DEBT": np.random.uniform(0.9, 1.2),
         "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
-        "R_EDUCATION": np.random.uniform(0.2, 0.4),
         "CREDIT_SCORE": np.random.randint(300, 520)
     })
 
@@ -104,9 +96,7 @@ for _ in range(20):
         "T_EXPENDITURE_12": np.random.uniform(25000, 40000),
         "T_GAMBLING_12": 0,
         "CAT_SAVINGS_ACCOUNT": 0,
-        "R_HOUSING_DEBT": np.random.uniform(0.6, 0.7),
         "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
-        "R_EDUCATION": np.random.uniform(0.5, 0.6),
         "CREDIT_SCORE": np.random.randint(740, 800)
     })
 
@@ -121,9 +111,7 @@ for _ in range(35):
         "T_EXPENDITURE_12": np.random.uniform(5000, 15000),
         "T_GAMBLING_12": np.random.uniform(2000, 5000),
         "CAT_SAVINGS_ACCOUNT": 0,
-        "R_HOUSING_DEBT": np.random.uniform(0.8, 1.2),
         "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
-        "R_EDUCATION": np.random.uniform(0.48, 0.52),
         "CREDIT_SCORE": np.random.randint(300, 520)  # Force into poor
     })
 
@@ -139,9 +127,7 @@ for _ in range(35):
         "T_EXPENDITURE_12": 0,
         "T_GAMBLING_12": 0,
         "CAT_SAVINGS_ACCOUNT": 0,
-        "R_HOUSING_DEBT": np.log1p(min(np.random.uniform(0, 1.5), 1.24)),
         "R_EXPENDITURE": 0,
-        "R_EDUCATION": 0,
         "CREDIT_SCORE": np.random.randint(300, 520)
     })
 df_debt_only = pd.DataFrame(debt_only_samples)
@@ -155,9 +141,7 @@ for _ in range(30):
         "T_EXPENDITURE_12": np.random.uniform(15000, 30000),
         "T_GAMBLING_12": np.random.uniform(8000, 20000),
         "CAT_SAVINGS_ACCOUNT": 0,
-        "R_HOUSING_DEBT": np.random.uniform(0.85, 1.3),
         "R_EXPENDITURE": np.random.uniform(0.45, 0.55),
-        "R_EDUCATION": np.random.uniform(0.35, 0.50),
         "CREDIT_SCORE": np.random.randint(300, 600)
     })
 
@@ -171,9 +155,7 @@ for _ in range(30):
         "T_EXPENDITURE_12": np.random.uniform(38000, 50000),
         "T_GAMBLING_12": 0,
         "CAT_SAVINGS_ACCOUNT": 1,
-        "R_HOUSING_DEBT": np.random.uniform(0.60, 0.75),
         "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
-        "R_EDUCATION": np.random.uniform(0.45, 0.55),
         "CREDIT_SCORE": np.random.randint(810, 850)
     })
 
@@ -228,9 +210,6 @@ debt = st.number_input("Total Debt", min_value=0.0)
 expenditure_12 = st.number_input("12-Month Expenditure", min_value=0.0)
 expenditure_6 = st.number_input("6-Month Expenditure", min_value=0.0)
 gambling = st.number_input("Annual Gambling Spend", min_value=0.0)
-housing = st.number_input("Annual Housing Spend", min_value=0.0)
-education_12 = st.number_input("12-Month Education Spend", min_value=0.0)
-education_6 = st.number_input("6-Month Education Spend", min_value=0.0)
 has_savings = st.checkbox("Do you have a savings account?")
 
 if st.button("Predict My Credit Score"):
@@ -238,16 +217,13 @@ if st.button("Predict My Credit Score"):
     t_expenditure_12 = expenditure_12
     t_expenditure_6 = expenditure_6
     t_gambling_12 = gambling
-    r_housing_debt = np.log1p(min(housing / (debt + 1), 1.24))
     cat_savings_account = 1 if has_savings else 0
     r_expenditure = t_expenditure_6 / (t_expenditure_12 + 1)
-    r_education = education_6 / (education_12 + 1)
 
     user_input_cont = [[
     r_debt_income, t_expenditure_12,
     t_gambling_12,
-    r_housing_debt,
-    r_expenditure, r_education
+    r_expenditure,
 ]]
     user_input_cat = [[cat_savings_account]]
 
@@ -266,15 +242,15 @@ if st.button("Predict My Credit Score"):
         income, debt, 
         r_debt_income, t_expenditure_12,
         t_gambling_12,
-        cat_savings_account, r_housing_debt,
-        r_expenditure, r_education, prediction
+        cat_savings_account,
+        r_expenditure, prediction
     )
 
     zero_fields = 0
 
     fields_to_check = [
         income, debt, expenditure_12, expenditure_6,  
-        gambling, housing, education_12, education_6, has_savings
+        gambling, has_savings
     ]
 
     for val in fields_to_check:
@@ -282,7 +258,7 @@ if st.button("Predict My Credit Score"):
             zero_fields += 1
 
     if zero_fields >= 5:
-        st.warning("⚠️ Your inputs contain many zero values. This may result in an inaccurate prediction. Try entering realistic estimates for typical expenses (e.g. health, housing, education).")
+        st.warning("⚠️ Your inputs contain many zero values. This may result in an inaccurate prediction. Try entering realistic estimates for typical expenses")
 
 
     latest = fetch_latest_score_with_label()
@@ -371,9 +347,7 @@ if st.button("Drop & Recreate Prediction Table"):
             r_debt_income FLOAT,
             t_gambling_12 FLOAT,
             cat_savings_account INTEGER,
-            r_housing_debt FLOAT,
             r_expenditure FLOAT,
-            r_education FLOAT,
             score FLOAT
         )
     """)
@@ -385,6 +359,6 @@ if st.button("Drop & Recreate Prediction Table"):
     st.dataframe(pd.DataFrame(columns=[
         "id", "timestamp", "income", "debt",
         "r_debt_income", "t_expenditure_12",
-        "t_gambling_12", "cat_savings_account", "r_housing_debt",
-        "r_expenditure", "r_education", "score"
+        "t_gambling_12", "cat_savings_account",
+        "r_expenditure", "score"
     ]))
