@@ -7,26 +7,30 @@ DB_PATH = "creditx_predictions.db"
 def get_connection():
     return sqlite3.connect(DB_PATH)
 
-def insert_prediction(income, debt, expenditure,
-                      r_debt_income, 
-                      t_health_12, t_gambling_12, cat_savings_account, r_expenditure,
-                      t_expenditure_12,
-                      r_housing_debt,
+def insert_prediction(income, debt,
+                      r_debt_income, t_expenditure_12,
+                      t_health_12, t_gambling_12,
+                      cat_savings_account, r_housing_debt,
+                      r_expenditure, r_education,
                       score):
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
     INSERT INTO predictions (
-        income, debt, expenditure,
-        r_debt_income,  
-        t_health_12, t_gambling_12, t_expenditure_12, cat_savings_account, r_housing_debt, r_expenditure,
+        income, debt,
+        r_debt_income, t_expenditure_12,
+        t_health_12, t_gambling_12,
+        cat_savings_account, r_housing_debt,
+        r_expenditure, r_education,
         score
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
-        income, debt, expenditure, t_expenditure_12,
-        r_debt_income, 
-        t_health_12, t_gambling_12, cat_savings_account, r_housing_debt, r_expenditure,
+        income, debt,
+        r_debt_income, t_expenditure_12,
+        t_health_12, t_gambling_12,
+        cat_savings_account, r_housing_debt,
+        r_expenditure, r_education,
         score
     ))
 
@@ -61,7 +65,6 @@ def fetch_predictions():
         timestamp,
         income,
         debt,
-        expenditure,
         r_debt_income,
         t_health_12,
         t_expenditure_12,
@@ -69,6 +72,7 @@ def fetch_predictions():
         cat_savings_account,
         r_housing_debt,
         r_expenditure,
+        r_education,
         score,
         CASE
             WHEN score >= 800 THEN '🟢 Excellent'

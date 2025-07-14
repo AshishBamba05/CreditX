@@ -24,13 +24,14 @@ df = pd.read_csv("credit_score.csv")
 df = df.fillna(df.median(numeric_only=True)).round(0)
 
 df["R_EXPENDITURE"] = df["T_EXPENDITURE_6"] / (df["T_EXPENDITURE_12"] + 1)
+df["R_EDUCATION"] = df["T_EDUCATION_6"] / (df["T_EDUCATION_12"] + 1)
 
 FEATURES = [
     'R_DEBT_INCOME', 
     'T_EXPENDITURE_12',
     'T_HEALTH_12', 'T_GAMBLING_12',
     'CAT_SAVINGS_ACCOUNT', 'R_HOUSING_DEBT',
-    'R_EXPENDITURE'
+    'R_EXPENDITURE', 'R_EDUCATION'
 ]
 
 X = df[FEATURES]
@@ -71,6 +72,8 @@ expenditure_6 = st.number_input("6-Month Expenditure", min_value=0.0)
 health = st.number_input("Annual Health Spend", min_value=0.0)
 gambling = st.number_input("Annual Gambling Spend", min_value=0.0)
 housing = st.number_input("Annual Housing Spend", min_value=0.0)
+education_12 = st.number_input("12-Month Education Spend", min_value=0.0)
+education_6 = st.number_input("6-Month Education Spend", min_value=0.0)
 has_savings = st.checkbox("Do you have a savings account?")
 
 if st.button("Predict My Credit Score"):
@@ -82,12 +85,13 @@ if st.button("Predict My Credit Score"):
     r_housing_debt = housing / (debt + 1)
     cat_savings_account = 1 if has_savings else 0
     r_expenditure = t_expenditure_6 / (t_expenditure_12 + 1)
+    r_education = education_6 / (education_12 + 1)
 
     user_input = [[
         r_debt_income, t_expenditure_12,
         t_health_12, t_gambling_12,
         cat_savings_account, r_housing_debt,
-        r_expenditure
+        r_expenditure, r_education
     ]]
     user_input_scaled = scaler.transform(user_input)
 
@@ -95,11 +99,11 @@ if st.button("Predict My Credit Score"):
     prediction = max(300, min(850, prediction))
 
     insert_prediction(
-        income, debt, expenditure_12,
+        income, debt, 
         r_debt_income, t_expenditure_12,
         t_health_12, t_gambling_12,
         cat_savings_account, r_housing_debt,
-        r_expenditure, prediction
+        r_expenditure, r_education, prediction
     )
 
     latest = fetch_latest_score_with_label()
@@ -185,13 +189,13 @@ if st.button("Drop & Recreate Prediction Table"):
             income FLOAT,
             debt FLOAT,
             t_expenditure_12 FLOAT,
-            expenditure FLOAT,
             r_debt_income FLOAT,
             t_health_12 FLOAT,
             t_gambling_12 FLOAT,
             cat_savings_account INTEGER,
             r_housing_debt FLOAT,
             r_expenditure FLOAT,
+            r_education FLOAT,
             score FLOAT
         )
     """)
@@ -201,8 +205,8 @@ if st.button("Drop & Recreate Prediction Table"):
 
     st.success("✅ Table has been dropped and recreated.")
     st.dataframe(pd.DataFrame(columns=[
-        "id", "timestamp", "income", "debt", "expenditure",
+        "id", "timestamp", "income", "debt",
         "r_debt_income", "t_health_12", "t_expenditure_12",
         "t_gambling_12", "cat_savings_account", "r_housing_debt",
-        "r_expenditure", "score"
+        "r_expenditure", "r_education", "score"
     ]))

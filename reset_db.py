@@ -11,7 +11,6 @@ cursor.execute("""
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
         income FLOAT,
         debt FLOAT,
-        expenditure FLOAT,
         t_expenditure_12 FLOAT,
         r_debt_income FLOAT,
         t_health_12 FLOAT,
@@ -19,6 +18,7 @@ cursor.execute("""
         cat_savings_account INTEGER,
         r_housing_debt FLOAT,
         r_expenditure FLOAT,
+        r_education FLOAT,
         score FLOAT
     )
 """)
@@ -26,4 +26,4 @@ cursor.execute("""
 conn.commit()
 conn.close()
 
-print("✅ New DB created with cat_savings_account and r_housing_debt columns and r_expenditure column.")
+print("✅ New DB created with correct columns for model features and predictions.")
