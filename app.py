@@ -3,6 +3,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
 from sklearn.svm import SVR
+from sklearn.ensemble import RandomForestRegressor
 import pandas as pd
 import sqlite3
 import plotly.graph_objects as go
@@ -26,6 +27,8 @@ df = df.fillna(df.median(numeric_only=True)).round(0)
 
 df["R_EXPENDITURE"] = df["T_EXPENDITURE_6"] / (df["T_EXPENDITURE_12"] + 1)
 df["R_EDUCATION"] = df["T_EDUCATION_6"] / (df["T_EDUCATION_12"] + 1)
+df["R_EDUCATION"] = df["R_EDUCATION"].clip(upper=1.5)
+
 
 FEATURES = [
     'R_DEBT_INCOME', 
@@ -44,9 +47,9 @@ df_balanced = pd.concat([
 
 np.random.seed(42)
 
-synthetic_samples = []
+highCred_samples = []
 for _ in range(10):
-    synthetic_samples.append({
+    highCred_samples.append({
         "R_DEBT_INCOME": np.random.uniform(0.0, 0.02),
         "T_EXPENDITURE_12": np.random.uniform(35000, 48000),
         "T_HEALTH_12": np.random.uniform(1500, 2500),
@@ -57,9 +60,13 @@ for _ in range(10):
         "R_EDUCATION": np.random.uniform(0.48, 0.52),
         "CREDIT_SCORE": np.random.randint(810, 850)
     })
+df_highCred = pd.DataFrame(highCred_samples)
+df_balanced = pd.concat([df_balanced, df_highCred], ignore_index=True)
 
+
+goodSavings_samples = []
 for _ in range(10):
-    synthetic_samples.append({
+    goodSavings_samples.append({
         "R_DEBT_INCOME": 0.0,
         "T_EXPENDITURE_12": 0.0,
         "T_HEALTH_12": 0.0,
@@ -71,8 +78,13 @@ for _ in range(10):
         "CREDIT_SCORE": 835
     })
 
+df_goodSavings = pd.DataFrame(goodSavings_samples)
+df_balanced = pd.concat([df_balanced, df_goodSavings], ignore_index=True)
+
+
+badSavings_samples = []
 for _ in range(20):
-    synthetic_samples.append({
+    badSavings_samples.append({
         "R_DEBT_INCOME": np.random.uniform(2.5, 4.5),
         "T_EXPENDITURE_12": np.random.uniform(5000, 12000),
         "T_HEALTH_12": np.random.uniform(500, 1000),
@@ -84,8 +96,13 @@ for _ in range(20):
         "CREDIT_SCORE": np.random.randint(300, 520)
     })
 
+df_badSavings = pd.DataFrame(badSavings_samples)
+df_balanced = pd.concat([df_balanced, df_badSavings], ignore_index=True)
+
+
+midCredit_samples = []
 for _ in range(20):
-    synthetic_samples.append({
+    midCredit_samples.append({
         "R_DEBT_INCOME": np.random.uniform(0.01, 0.03),
         "T_EXPENDITURE_12": np.random.uniform(25000, 40000),
         "T_HEALTH_12": np.random.uniform(1500, 3000),
@@ -97,9 +114,8 @@ for _ in range(20):
         "CREDIT_SCORE": np.random.randint(740, 800)
     })
 
-
-df_synthetic = pd.DataFrame(synthetic_samples)
-df_balanced = pd.concat([df_balanced, df_synthetic], ignore_index=True)
+df_midCredit_samples = pd.DataFrame(midCredit_samples)
+df_balanced = pd.concat([df_balanced, df_midCredit_samples], ignore_index=True)
 
 # Add 15 synthetics for very risky profiles
 poor_samples = []
@@ -196,12 +212,17 @@ X_train_final = np.hstack([X_train_scaled_cont, X_train_cat])
 X_test_final = np.hstack([X_test_scaled_cont, X_test_cat])
 
 
-svm_model = SVR(kernel='rbf', C=95, epsilon=23, gamma=0.1, verbose=False)
-svm_model.fit(X_train_final, y_train)
+#svm_model = SVR(kernel='rbf', C=95, epsilon=23, gamma=0.1, verbose=False)
+#svm_model.fit(X_train_final, y_train)
+
+rf_model = RandomForestRegressor(n_estimators=115, max_depth=8, random_state=42)
+rf_model.fit(X_train_final, y_train)
 
 # --- Model Evaluation ---
-y_train_pred = svm_model.predict(X_train_final)
-y_test_pred = svm_model.predict(X_test_final)
+y_train_pred = rf_model.predict(X_train_final)
+# svm_model.predict(X_train_final)
+y_test_pred = rf_model.predict(X_test_final)
+#svm_model.predict(X_test_final)
 
 mae_train = mean_absolute_error(y_train, y_train_pred)
 mae_test = mean_absolute_error(y_test, y_test_pred)
@@ -253,7 +274,7 @@ if st.button("Predict My Credit Score"):
     print("Raw input (cat):", user_input_cat)
     print("Full input:", user_input_final)
 
-    prediction = int(round(svm_model.predict(user_input_final)[0]))
+    prediction = int(round(rf_model.predict(user_input_final)[0]))
 
     prediction = max(300, min(850, prediction))
 
