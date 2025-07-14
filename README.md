@@ -23,8 +23,8 @@ Once the input features are extracted, the model applies feature engineering to 
 
 ## 📊 Model Performance
 
-- ✅ **Mean Absolute Error (MAE):** 20.4  
-- ✅ **Mean Squared Error (MSE):** 760.34  
-- ✅ **R² Score:** 0.817
+- ✅ **Mean Absolute Error (MAE):** 22.75
+- ✅ **Mean Squared Error (MSE):** 959.55 
+- ✅ **R² Score:** 0.847
 ---
 
