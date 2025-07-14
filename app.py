@@ -1,7 +1,7 @@
 import streamlit as st
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
 from sklearn.svm import SVR
 import pandas as pd
 import sqlite3
@@ -23,6 +23,8 @@ cursor = conn.cursor()
 # --- Load & Prepare Dataset ---
 df = pd.read_csv("credit_score.csv")
 df = df.fillna(df.median(numeric_only=True)).round(0)
+print(df["CREDIT_SCORE"].describe())
+
 
 df["R_EXPENDITURE"] = df["T_EXPENDITURE_6"] / (df["T_EXPENDITURE_12"] + 1)
 df["R_EDUCATION"] = df["T_EDUCATION_6"] / (df["T_EDUCATION_12"] + 1)
@@ -35,11 +37,19 @@ FEATURES = [
     'R_EXPENDITURE', 'R_EDUCATION'
 ]
 
-X = df[FEATURES]
-y = df["CREDIT_SCORE"]
+# Oversample high-credit samples
+df_high = df[df["CREDIT_SCORE"] >= 700]
+df_balanced = pd.concat([
+    df,
+    df_high.sample(n=200, replace=True, random_state=42)
+])
+
+X = df_balanced[FEATURES]
+y = df_balanced["CREDIT_SCORE"]
+
 
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.25, random_state=42
+    X, y, test_size=0.3, random_state=42
 )
 
 scaler = StandardScaler()
@@ -78,12 +88,12 @@ education_6 = st.number_input("6-Month Education Spend", min_value=0.0)
 has_savings = st.checkbox("Do you have a savings account?")
 
 if st.button("Predict My Credit Score"):
-    r_debt_income = debt / (income + 1)
+    r_debt_income = min(debt / (income + 1), 5)
     t_expenditure_12 = expenditure_12
     t_expenditure_6 = expenditure_6
     t_health_12 = health
     t_gambling_12 = gambling
-    r_housing_debt = np.log1p(housing / (debt + 1))
+    r_housing_debt = np.log1p(min(housing / (debt + 1), 1.24))
     cat_savings_account = 1 if has_savings else 0
     r_expenditure = t_expenditure_6 / (t_expenditure_12 + 1)
     r_education = education_6 / (education_12 + 1)
