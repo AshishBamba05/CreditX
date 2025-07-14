@@ -1,11 +1,12 @@
 import streamlit as st
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.svm import SVR
 import pandas as pd
 import sqlite3
 import plotly.graph_objects as go
+import numpy as np
 
 from db_utils import (
     insert_prediction,
@@ -82,7 +83,7 @@ if st.button("Predict My Credit Score"):
     t_expenditure_6 = expenditure_6
     t_health_12 = health
     t_gambling_12 = gambling
-    r_housing_debt = housing / (debt + 1)
+    r_housing_debt = np.log1p(housing / (debt + 1))
     cat_savings_account = 1 if has_savings else 0
     r_expenditure = t_expenditure_6 / (t_expenditure_12 + 1)
     r_education = education_6 / (education_12 + 1)
@@ -94,6 +95,10 @@ if st.button("Predict My Credit Score"):
         r_expenditure, r_education
     ]]
     user_input_scaled = scaler.transform(user_input)
+
+    print("Raw input:", user_input)
+    print("Scaled input:", user_input_scaled)
+
 
     prediction = int(round(svm_model.predict(user_input_scaled)[0]))
     prediction = max(300, min(850, prediction))
