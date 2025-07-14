@@ -23,8 +23,6 @@ cursor = conn.cursor()
 # --- Load & Prepare Dataset ---
 df = pd.read_csv("credit_score.csv")
 df = df.fillna(df.median(numeric_only=True)).round(0)
-print(df["CREDIT_SCORE"].describe())
-
 
 df["R_EXPENDITURE"] = df["T_EXPENDITURE_6"] / (df["T_EXPENDITURE_12"] + 1)
 df["R_EDUCATION"] = df["T_EDUCATION_6"] / (df["T_EDUCATION_12"] + 1)
@@ -44,24 +42,55 @@ df_balanced = pd.concat([
     df_high.sample(n=200, replace=True, random_state=42)
 ])
 
+np.random.seed(42)
+
+synthetic_samples = []
+for _ in range(10):
+    synthetic_samples.append({
+        "R_DEBT_INCOME": np.random.uniform(0.0, 0.02),
+        "T_EXPENDITURE_12": np.random.uniform(35000, 48000),
+        "T_HEALTH_12": np.random.uniform(1500, 2500),
+        "T_GAMBLING_12": 0,
+        "CAT_SAVINGS_ACCOUNT": 1,
+        "R_HOUSING_DEBT": np.random.uniform(0.65, 0.78),
+        "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
+        "R_EDUCATION": np.random.uniform(0.48, 0.52),
+        "CREDIT_SCORE": np.random.randint(810, 850)
+    })
+
+df_synthetic = pd.DataFrame(synthetic_samples)
+df_balanced = pd.concat([df_balanced, df_synthetic], ignore_index=True)
+
+
 X = df_balanced[FEATURES]
 y = df_balanced["CREDIT_SCORE"]
+print(df_balanced["CREDIT_SCORE"].describe())
 
+# Separate continuous vs. binary categorical feature
+X_continuous = X.drop(columns=["CAT_SAVINGS_ACCOUNT"])
+X_cat = X[["CAT_SAVINGS_ACCOUNT"]].values  # keep as raw 0/1
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.3, random_state=42
+# Train/test split
+X_train_cont, X_test_cont, X_train_cat, X_test_cat, y_train, y_test = train_test_split(
+    X_continuous, X_cat, y, test_size=0.3, random_state=42
 )
 
+# Scale only continuous features
 scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
+X_train_scaled_cont = scaler.fit_transform(X_train_cont)
+X_test_scaled_cont = scaler.transform(X_test_cont)
+
+# Combine scaled continuous + unscaled categorical
+X_train_final = np.hstack([X_train_scaled_cont, X_train_cat])
+X_test_final = np.hstack([X_test_scaled_cont, X_test_cat])
+
 
 svm_model = SVR(kernel='rbf', C=95, epsilon=23, gamma=0.1, verbose=False)
-svm_model.fit(X_train, y_train)
+svm_model.fit(X_train_final, y_train)
 
 # --- Model Evaluation ---
-y_train_pred = svm_model.predict(X_train)
-y_test_pred = svm_model.predict(X_test)
+y_train_pred = svm_model.predict(X_train_final)
+y_test_pred = svm_model.predict(X_test_final)
 
 mae_train = mean_absolute_error(y_train, y_train_pred)
 mae_test = mean_absolute_error(y_test, y_test_pred)
@@ -98,19 +127,23 @@ if st.button("Predict My Credit Score"):
     r_expenditure = t_expenditure_6 / (t_expenditure_12 + 1)
     r_education = education_6 / (education_12 + 1)
 
-    user_input = [[
-        r_debt_income, t_expenditure_12,
-        t_health_12, t_gambling_12,
-        cat_savings_account, r_housing_debt,
-        r_expenditure, r_education
-    ]]
-    user_input_scaled = scaler.transform(user_input)
+    user_input_cont = [[
+    r_debt_income, t_expenditure_12,
+    t_health_12, t_gambling_12,
+    r_housing_debt,
+    r_expenditure, r_education
+]]
+    user_input_cat = [[cat_savings_account]]
 
-    print("Raw input:", user_input)
-    print("Scaled input:", user_input_scaled)
+    user_input_scaled_cont = scaler.transform(user_input_cont)
+    user_input_final = np.hstack([user_input_scaled_cont, user_input_cat])
 
+    print("Raw input (cont):", user_input_cont)
+    print("Raw input (cat):", user_input_cat)
+    print("Full input:", user_input_final)
 
-    prediction = int(round(svm_model.predict(user_input_scaled)[0]))
+    prediction = int(round(svm_model.predict(user_input_final)[0]))
+
     prediction = max(300, min(850, prediction))
 
     insert_prediction(
