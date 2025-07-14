@@ -110,6 +110,43 @@ for _ in range(35):
 df_debt_only = pd.DataFrame(debt_only_samples)
 df_balanced = pd.concat([df_balanced, df_debt_only], ignore_index=True)
 
+# --- Synthetic: Gambling-Heavy Risk Profiles ---
+gambling_risk_samples = []
+for _ in range(30):
+    gambling_risk_samples.append({
+        "R_DEBT_INCOME": np.random.uniform(1.0, 3.5),
+        "T_EXPENDITURE_12": np.random.uniform(15000, 30000),
+        "T_HEALTH_12": np.random.uniform(500, 1500),
+        "T_GAMBLING_12": np.random.uniform(8000, 20000),
+        "CAT_SAVINGS_ACCOUNT": 0,
+        "R_HOUSING_DEBT": np.random.uniform(0.85, 1.3),
+        "R_EXPENDITURE": np.random.uniform(0.45, 0.55),
+        "R_EDUCATION": np.random.uniform(0.35, 0.50),
+        "CREDIT_SCORE": np.random.randint(300, 600)
+    })
+
+df_gambling = pd.DataFrame(gambling_risk_samples)
+df_balanced = pd.concat([df_balanced, df_gambling], ignore_index=True)
+
+excellent_samples = []
+for _ in range(30):
+    excellent_samples.append({
+        "R_DEBT_INCOME": np.random.uniform(0.01, 0.05),
+        "T_EXPENDITURE_12": np.random.uniform(38000, 50000),
+        "T_HEALTH_12": np.random.uniform(2000, 3000),
+        "T_GAMBLING_12": 0,
+        "CAT_SAVINGS_ACCOUNT": 1,
+        "R_HOUSING_DEBT": np.random.uniform(0.60, 0.75),
+        "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
+        "R_EDUCATION": np.random.uniform(0.45, 0.55),
+        "CREDIT_SCORE": np.random.randint(810, 850)
+    })
+
+df_excellent = pd.DataFrame(excellent_samples)
+df_balanced = pd.concat([df_balanced, df_excellent], ignore_index=True)
+
+
+
 
 X = df_balanced[FEATURES]
 y = df_balanced["CREDIT_SCORE"]
