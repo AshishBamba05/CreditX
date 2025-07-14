@@ -71,6 +71,33 @@ for _ in range(10):
         "CREDIT_SCORE": 835
     })
 
+for _ in range(20):
+    synthetic_samples.append({
+        "R_DEBT_INCOME": np.random.uniform(2.5, 4.5),
+        "T_EXPENDITURE_12": np.random.uniform(5000, 12000),
+        "T_HEALTH_12": np.random.uniform(500, 1000),
+        "T_GAMBLING_12": np.random.uniform(3000, 6000),
+        "CAT_SAVINGS_ACCOUNT": 1,
+        "R_HOUSING_DEBT": np.random.uniform(0.9, 1.2),
+        "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
+        "R_EDUCATION": np.random.uniform(0.2, 0.4),
+        "CREDIT_SCORE": np.random.randint(300, 520)
+    })
+
+for _ in range(20):
+    synthetic_samples.append({
+        "R_DEBT_INCOME": np.random.uniform(0.01, 0.03),
+        "T_EXPENDITURE_12": np.random.uniform(25000, 40000),
+        "T_HEALTH_12": np.random.uniform(1500, 3000),
+        "T_GAMBLING_12": 0,
+        "CAT_SAVINGS_ACCOUNT": 0,
+        "R_HOUSING_DEBT": np.random.uniform(0.6, 0.7),
+        "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
+        "R_EDUCATION": np.random.uniform(0.5, 0.6),
+        "CREDIT_SCORE": np.random.randint(740, 800)
+    })
+
+
 df_synthetic = pd.DataFrame(synthetic_samples)
 df_balanced = pd.concat([df_balanced, df_synthetic], ignore_index=True)
 
