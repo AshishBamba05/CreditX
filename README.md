@@ -23,9 +23,9 @@ Once the input features are extracted, the model applies feature engineering to 
 
 ## 📊 Model Performance
 
-- ✅ **Accuracy**: 0.727
-- ✅ **Precision**: 0.594
-- ✅ **Recall**: 0.466
-- ✅ **F1 Score**: 0.522
+- ✅ **Accuracy**: 0.742
+- ✅ **Precision**: 0.62
+- ✅ **Recall**: 0.5
+- ✅ **F1 Score**: 0.553
 ---
 
