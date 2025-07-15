@@ -16,7 +16,7 @@ cursor.execute("""
         t_gambling_12 FLOAT,
         cat_savings_account INTEGER,
         r_expenditure FLOAT,
-        score FLOAT
+        score INTEGER
     )
 """)
 

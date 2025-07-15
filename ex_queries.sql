@@ -23,11 +23,9 @@ SELECT
 SELECT 
   score,
   CASE
-    WHEN score >= 800 THEN '🟢 Excellent'
-    WHEN score >= 740 THEN '🟢 Very Good'
-    WHEN score >= 670 THEN '🟡 Good'
-    WHEN score >= 580 THEN '🟠 Fair'
-    ELSE '🔴 Poor'
+    WHEN score = 1 THEN '🔴 Default'
+    WHEN score = 0 THEN '🟢 No Default'
+    ELSE '⚪ Unknown'
   END AS score_category,
   timestamp
 FROM predictions

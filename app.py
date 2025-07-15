@@ -1,9 +1,8 @@
 import streamlit as st
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
-from sklearn.svm import SVR
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 import sqlite3
 import plotly.graph_objects as go
@@ -27,7 +26,6 @@ df = df.fillna(df.median(numeric_only=True)).round(0)
 
 df["R_EXPENDITURE"] = df["T_EXPENDITURE_6"] / (df["T_EXPENDITURE_12"] + 1)
 
-
 FEATURES = [
     'R_DEBT_INCOME', 
     'T_EXPENDITURE_12',
@@ -36,136 +34,53 @@ FEATURES = [
     'R_EXPENDITURE',
 ]
 
-# Oversample high-credit samples
-df_high = df[df["CREDIT_SCORE"] >= 700]
-df_balanced = pd.concat([
-    df,
-    df_high.sample(n=200, replace=True, random_state=42)
-])
-
-np.random.seed(42)
-
-highCred_samples = []
-for _ in range(10):
-    highCred_samples.append({
-        "R_DEBT_INCOME": np.random.uniform(0.0, 0.02),
-        "T_EXPENDITURE_12": np.random.uniform(35000, 48000),
-        "T_GAMBLING_12": 0,
-        "CAT_SAVINGS_ACCOUNT": 1,
-        "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
-        "CREDIT_SCORE": np.random.randint(810, 850)
-    })
-df_highCred = pd.DataFrame(highCred_samples)
-df_balanced = pd.concat([df_balanced, df_highCred], ignore_index=True)
-
-
-goodSavings_samples = []
-for _ in range(10):
-    goodSavings_samples.append({
-        "R_DEBT_INCOME": 0.0,
-        "T_EXPENDITURE_12": 0.0,
-        "T_GAMBLING_12": 0.0,
-        "CAT_SAVINGS_ACCOUNT": 1,
-        "R_EXPENDITURE": 0.0,
-        "CREDIT_SCORE": 835
-    })
-
-df_goodSavings = pd.DataFrame(goodSavings_samples)
-df_balanced = pd.concat([df_balanced, df_goodSavings], ignore_index=True)
-
-
-badSavings_samples = []
-for _ in range(20):
-    badSavings_samples.append({
-        "R_DEBT_INCOME": np.random.uniform(2.5, 4.5),
-        "T_EXPENDITURE_12": np.random.uniform(5000, 12000),
-        "T_GAMBLING_12": np.random.uniform(3000, 6000),
-        "CAT_SAVINGS_ACCOUNT": 1,
-        "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
-        "CREDIT_SCORE": np.random.randint(300, 520)
-    })
-
-df_badSavings = pd.DataFrame(badSavings_samples)
-df_balanced = pd.concat([df_balanced, df_badSavings], ignore_index=True)
-
-
-midCredit_samples = []
-for _ in range(20):
-    midCredit_samples.append({
-        "R_DEBT_INCOME": np.random.uniform(0.01, 0.03),
-        "T_EXPENDITURE_12": np.random.uniform(25000, 40000),
-        "T_GAMBLING_12": 0,
-        "CAT_SAVINGS_ACCOUNT": 0,
-        "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
-        "CREDIT_SCORE": np.random.randint(740, 800)
-    })
-
-df_midCredit_samples = pd.DataFrame(midCredit_samples)
-df_balanced = pd.concat([df_balanced, df_midCredit_samples], ignore_index=True)
-
-# Add 15 synthetics for very risky profiles
 poor_samples = []
 for _ in range(35):
-    poor_samples.append({
-        "R_DEBT_INCOME": np.random.uniform(1.5, 5.0),  # Very high ratio
-        "T_EXPENDITURE_12": np.random.uniform(5000, 15000),
-        "T_GAMBLING_12": np.random.uniform(2000, 5000),
-        "CAT_SAVINGS_ACCOUNT": 0,
-        "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
-        "CREDIT_SCORE": np.random.randint(300, 520)  # Force into poor
-    })
+   poor_samples.append({
+       "R_DEBT_INCOME": np.random.uniform(1.5, 5.0),  # Very high ratio
+       "T_EXPENDITURE_12": np.random.uniform(5000, 15000),
+       "T_GAMBLING_12": np.random.uniform(2000, 5000),
+       "CAT_SAVINGS_ACCOUNT": 0,
+       "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
+       "DEFAULT": 1
+   })
 
 df_poor = pd.DataFrame(poor_samples)
-df_balanced = pd.concat([df_balanced, df_poor], ignore_index=True)
+df_balanced = pd.concat([df, df_poor], ignore_index=True)
 
 debt_only_samples = []
 for _ in range(35):
-    income = 0
-    debt = np.random.uniform(50000, 150000)
-    debt_only_samples.append({
-        "R_DEBT_INCOME": min(debt / (income + 1), 5),
-        "T_EXPENDITURE_12": 0,
-        "T_GAMBLING_12": 0,
-        "CAT_SAVINGS_ACCOUNT": 0,
-        "R_EXPENDITURE": 0,
-        "CREDIT_SCORE": np.random.randint(300, 520)
-    })
+   income = 0
+   debt = np.random.uniform(50000, 150000)
+   debt_only_samples.append({
+       "R_DEBT_INCOME": min(debt / (income + 1), 5),
+       "T_EXPENDITURE_12": 0,
+       "T_GAMBLING_12": 0,
+       "CAT_SAVINGS_ACCOUNT": 0,
+       "R_EXPENDITURE": 0,
+       "DEFAULT": 1
+   })
 df_debt_only = pd.DataFrame(debt_only_samples)
 df_balanced = pd.concat([df_balanced, df_debt_only], ignore_index=True)
 
 # --- Synthetic: Gambling-Heavy Risk Profiles ---
 gambling_risk_samples = []
 for _ in range(30):
-    gambling_risk_samples.append({
-        "R_DEBT_INCOME": np.random.uniform(1.0, 3.5),
-        "T_EXPENDITURE_12": np.random.uniform(15000, 30000),
-        "T_GAMBLING_12": np.random.uniform(8000, 20000),
-        "CAT_SAVINGS_ACCOUNT": 0,
-        "R_EXPENDITURE": np.random.uniform(0.45, 0.55),
-        "CREDIT_SCORE": np.random.randint(300, 600)
-    })
+   gambling_risk_samples.append({
+       "R_DEBT_INCOME": np.random.uniform(1.0, 3.5),
+       "T_EXPENDITURE_12": np.random.uniform(15000, 30000),
+       "T_GAMBLING_12": np.random.uniform(8000, 20000),
+       "CAT_SAVINGS_ACCOUNT": 0,
+       "R_EXPENDITURE": np.random.uniform(0.45, 0.55),
+       "DEFAULT": 1
+   })
 
 df_gambling = pd.DataFrame(gambling_risk_samples)
 df_balanced = pd.concat([df_balanced, df_gambling], ignore_index=True)
 
-excellent_samples = []
-for _ in range(30):
-    excellent_samples.append({
-        "R_DEBT_INCOME": np.random.uniform(0.01, 0.05),
-        "T_EXPENDITURE_12": np.random.uniform(38000, 50000),
-        "T_GAMBLING_12": 0,
-        "CAT_SAVINGS_ACCOUNT": 1,
-        "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
-        "CREDIT_SCORE": np.random.randint(810, 850)
-    })
-
-df_excellent = pd.DataFrame(excellent_samples)
-df_balanced = pd.concat([df_balanced, df_excellent], ignore_index=True)
-
-
 X = df_balanced[FEATURES]
-y = df_balanced["CREDIT_SCORE"]
-print(df_balanced["CREDIT_SCORE"].describe())
+y = df_balanced["DEFAULT"]
+print(df_balanced["DEFAULT"].describe())
 
 # Separate continuous vs. binary categorical feature
 X_continuous = X.drop(columns=["CAT_SAVINGS_ACCOUNT"])
@@ -185,22 +100,23 @@ X_test_scaled_cont = scaler.transform(X_test_cont)
 X_train_final = np.hstack([X_train_scaled_cont, X_train_cat])
 X_test_final = np.hstack([X_test_scaled_cont, X_test_cat])
 
-rf_model = RandomForestRegressor(n_estimators=115, max_depth=8, random_state=42)
+rf_model = RandomForestClassifier(n_estimators=115, max_depth=8, class_weight='balanced', random_state=42)
 rf_model.fit(X_train_final, y_train)
 
 # --- Model Evaluation ---
 y_train_pred = rf_model.predict(X_train_final)
 y_test_pred = rf_model.predict(X_test_final)
 
-mae_train = mean_absolute_error(y_train, y_train_pred)
-mae_test = mean_absolute_error(y_test, y_test_pred)
-mse_train = mean_squared_error(y_train, y_train_pred)
-mse_test = mean_squared_error(y_test, y_test_pred)
-r2_train = r2_score(y_train, y_train_pred)
-r2_test = r2_score(y_test, y_test_pred)
+accuracy = accuracy_score(y_test, y_test_pred)
+precision = precision_score(y_test, y_test_pred)
+recall = recall_score(y_test, y_test_pred)
+f1 = f1_score(y_test, y_test_pred)
 
-print(f"Test MAE:  {mae_test:.2f}, Test MSE:  {mse_test:.2f}")
-print(f"Test R² Score:  {r2_test:.3f}")
+print(f"Accuracy: {accuracy:.3f}")
+print(f"Precision: {precision:.3f}")
+print(f"Recall: {recall:.3f}")
+print(f"F1 Score: {f1:.3f}")
+
 
 # --- Streamlit UI ---
 st.title("Credit Score Predictor | By Ashish V Bamba")
@@ -212,7 +128,7 @@ expenditure_6 = st.number_input("6-Month Expenditure", min_value=0.0)
 gambling = st.number_input("Annual Gambling Spend", min_value=0.0)
 has_savings = st.checkbox("Do you have a savings account?")
 
-if st.button("Predict My Credit Score"):
+if st.button("Predict Default Status"):
     r_debt_income = np.log1p(debt / (income + 1))
     t_expenditure_12 = expenditure_12
     t_expenditure_6 = expenditure_6
@@ -234,9 +150,9 @@ if st.button("Predict My Credit Score"):
     print("Raw input (cat):", user_input_cat)
     print("Full input:", user_input_final)
 
-    prediction = int(round(rf_model.predict(user_input_final)[0]))
+    prediction = rf_model.predict(user_input_final)[0]
+    prob = rf_model.predict_proba(user_input_final)[0][1]  # Probability of default
 
-    prediction = max(300, min(850, prediction))
 
     insert_prediction(
         income, debt, 
@@ -262,31 +178,41 @@ if st.button("Predict My Credit Score"):
 
 
     latest = fetch_latest_score_with_label()
-    score = int(latest['score'][0])
-    label = latest['score_category'][0]
+    raw_score = latest['score'][0]
+    score = int.from_bytes(raw_score, byteorder='little') if isinstance(raw_score, bytes) else int(raw_score)
+
+    label = "Default" if score == 1 else "No Default"
+
 
     fig = go.Figure(go.Indicator(
-        mode="gauge+number",
-        value=score,
-        domain={'x': [0, 1], 'y': [0, 1]},
-        title={'text': label, 'font': {'size': 24}},
-        gauge={
-            'axis': {'range': [300, 850], 'tickwidth': 1, 'tickcolor': "darkgray"},
-            'bar': {'color': "green"},
-            'bgcolor': "white",
-            'borderwidth': 2,
-            'bordercolor': "gray",
-            'steps': [
-                {'range': [300, 580], 'color': "#FF4B4B"},
-                {'range': [580, 670], 'color': "#FFA500"},
-                {'range': [670, 740], 'color': "#FFD700"},
-                {'range': [740, 800], 'color': "#90EE90"},
-                {'range': [800, 850], 'color': "#00FF00"}
-            ]
-        }
+    mode="number+gauge",
+    value=prob * 100,  # convert to percent
+    number={'suffix': "%", 'font': {'size': 36}},
+    title={'text': "Probability of Default", 'font': {'size': 24}},
+    gauge={
+        'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "darkgray"},
+        'bar': {'color': "red" if prediction == 1 else "green"},
+        'bgcolor': "white",
+        'borderwidth': 2,
+        'bordercolor': "gray",
+        'steps': [
+            {'range': [0, 25], 'color': "#00FF00"},
+            {'range': [25, 50], 'color': "#FFD700"},
+            {'range': [50, 75], 'color': "#FFA500"},
+            {'range': [75, 100], 'color': "#FF4B4B"},
+        ]
+    },
+    domain={'x': [0, 1], 'y': [0, 1]}
     ))
+
     st.plotly_chart(fig, use_container_width=True)
-    st.success(f"Estimated Credit Score: {score}  \nCategory: {label}")
+
+    if prediction == 1:
+        st.error(f"⚠️ This user is likely to **default**.\nProbability: {prob:.2%}")
+    else:
+        st.success(f"✅ This user is likely **not** to default.\nProbability: {prob:.2%}")
+
+
 
     sql = run_sql_query_from_file("ex_queries.sql", "classify_user",
                                   income=income,
@@ -306,30 +232,29 @@ if st.button("Predict My Credit Score"):
 st.subheader("Prediction History")
 prediction_df = fetch_predictions()
 
-def style_by_category(category):
-    if 'Excellent' in category:
-        return 'color: green'
-    elif 'Very Good' in category:
-        return 'color: limegreen'
-    elif 'Good' in category:
-        return 'color: goldenrod'
-    elif 'Fair' in category:
-        return 'color: darkorange'
-    elif 'Poor' in category:
+def style_by_default_flag(row):
+    return [
+        'color: red' if row['score'] == 1 else 'color: green'
+        if row['score'] == 0 else ''
+    ] * len(row)
+
+
+styled_df = prediction_df.style.apply(style_by_default_flag, axis=1)
+
+
+def style_score_cell(val):
+    if val == 1:
         return 'color: red'
+    elif val == 0:
+        return 'color: green'
     return ''
 
 if not prediction_df.empty:
-    styled_df = prediction_df.style.apply(
-        lambda row: [
-            style_by_category(row['score_category']) if col == 'score' else ''
-            for col in prediction_df.columns
-        ],
-        axis=1
-    )
+    styled_df = prediction_df.style.applymap(style_score_cell, subset=['score'])
     st.dataframe(styled_df)
 else:
     st.info("No predictions yet.")
+
 
 # --- Drop & Recreate Table ---
 if st.button("Drop & Recreate Prediction Table"):
@@ -348,7 +273,7 @@ if st.button("Drop & Recreate Prediction Table"):
             t_gambling_12 FLOAT,
             cat_savings_account INTEGER,
             r_expenditure FLOAT,
-            score FLOAT
+            score INTEGER
         )
     """)
 

@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "credit_predictor",
+			"path": "."
+		},
+		{
+			"name": "CreditPredictorWNewDataSet",
+			"path": "../CreditPredictorWNewDataSet"
+		}
+	],
+	"settings": {}
+}

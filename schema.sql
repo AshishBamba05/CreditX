@@ -13,5 +13,5 @@ CREATE TABLE predictions (
   r_housing_debt FLOAT,
   r_expenditure FLOAT,
   r_education FLOAT,
-  score FLOAT
+  score INTEGER
 );
