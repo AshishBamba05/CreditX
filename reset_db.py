@@ -15,7 +15,11 @@ cursor.execute("""
         r_debt_income FLOAT,
         t_gambling_12 FLOAT,
         cat_savings_account INTEGER,
+        cat_credit_card INTEGER,
         r_expenditure FLOAT,
+        education_12 FLOAT,
+        education_6 FLOAT,
+        r_education FLOAT,
         score INTEGER
     )
 """)
@@ -23,4 +27,4 @@ cursor.execute("""
 conn.commit()
 conn.close()
 
-print("✅ New DB created with correct columns for model features and predictions.")
+print("✅ Recreated table with all required columns.")

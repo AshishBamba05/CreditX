@@ -8,7 +8,7 @@ def get_connection():
     return sqlite3.connect(DB_PATH)
 
 def insert_prediction(income, debt,
-                      r_debt_income, t_expenditure_12,
+                      r_debt_income,
                       t_gambling_12,
                       education_12,
                       education_6,
@@ -21,9 +21,9 @@ def insert_prediction(income, debt,
     cursor = conn.cursor()
 
     cursor.execute("""
-    INSERT INTO predictions (
+        INSERT INTO predictions (
         income, debt,
-        r_debt_income, t_expenditure_12,
+        r_debt_income, 
         t_gambling_12,
         cat_savings_account, 
         cat_credit_card,
@@ -35,16 +35,17 @@ def insert_prediction(income, debt,
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         income, debt,
-        r_debt_income, t_expenditure_12,
+        r_debt_income, 
         t_gambling_12,
         cat_savings_account,
         cat_credit_card,
+        r_expenditure,  # moved up
         education_12,
         education_6,
         r_education,
-        r_expenditure, 
         score
     ))
+
 
     conn.commit()
     conn.close()
@@ -82,6 +83,10 @@ def fetch_predictions():
         t_gambling_12,
         cat_savings_account,
         r_expenditure,
+        education_12,
+        education_6,
+        r_education,
+        cat_credit_card,
         score,
         CASE
             WHEN score = 1 THEN '🔴 Default'

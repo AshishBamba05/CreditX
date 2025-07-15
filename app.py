@@ -27,24 +27,20 @@ df = df.fillna(df.median(numeric_only=True)).round(0)
 df["R_EXPENDITURE"] = df["T_EXPENDITURE_6"] / (df["T_EXPENDITURE_12"] + 1)
 df["R_EDUCATION"] = df["T_EDUCATION_6"] / (df["T_EDUCATION_12"] + 1)
 
-
 FEATURES = [
     'R_DEBT_INCOME', 
-    'T_EXPENDITURE_12',
     'T_GAMBLING_12',
     'CAT_SAVINGS_ACCOUNT',
     'CAT_CREDIT_CARD',      
     'R_EXPENDITURE',
     'R_EDUCATION'
+    
 ]
-
-
 
 poor_samples = []
 for _ in range(35):
    poor_samples.append({
        "R_DEBT_INCOME": np.random.uniform(1.5, 5.0),  # Very high ratio
-       "T_EXPENDITURE_12": np.random.uniform(5000, 15000),
        "T_GAMBLING_12": np.random.uniform(2000, 5000),
        "CAT_SAVINGS_ACCOUNT": 0,
        "CAT_CREDIT_CARD": np.random.choice([0, 1]),
@@ -62,7 +58,6 @@ for _ in range(35):
    debt = np.random.uniform(50000, 150000)
    debt_only_samples.append({
        "R_DEBT_INCOME": min(debt / (income + 1), 5),
-       "T_EXPENDITURE_12": 0,
        "T_GAMBLING_12": 0,
        "CAT_SAVINGS_ACCOUNT": 0,
        "CAT_CREDIT_CARD": np.random.choice([0, 1]),
@@ -78,7 +73,6 @@ gambling_risk_samples = []
 for _ in range(30):
    gambling_risk_samples.append({
        "R_DEBT_INCOME": np.random.uniform(1.0, 3.5),
-       "T_EXPENDITURE_12": np.random.uniform(15000, 30000),
        "T_GAMBLING_12": np.random.uniform(8000, 20000),
        "CAT_SAVINGS_ACCOUNT": 0,
        "CAT_CREDIT_CARD": np.random.choice([0, 1]),
@@ -152,11 +146,10 @@ if st.button("Predict Default Status"):
     cat_savings_account = 1 if has_savings else 0
     r_expenditure = t_expenditure_6 / (t_expenditure_12 + 1)
     r_education = education_6 / (education_12 + 1)
-    cat_mortgage = 1 if has_mortgage else 0
     cat_credit_card = 1 if has_credit_card else 0
 
     user_input_cont = [[
-    r_debt_income, t_expenditure_12,
+    r_debt_income, 
     t_gambling_12,
     r_expenditure, 
     r_education
@@ -176,7 +169,7 @@ if st.button("Predict Default Status"):
 
     insert_prediction(
         income, debt, 
-        r_debt_income, t_expenditure_12,
+        r_debt_income, 
         t_gambling_12,
         cat_savings_account,
         r_expenditure, 
@@ -295,7 +288,6 @@ if st.button("Drop & Recreate Prediction Table"):
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             income FLOAT,
             debt FLOAT,
-            t_expenditure_12 FLOAT,
             r_debt_income FLOAT,
             t_gambling_12 FLOAT,
             cat_savings_account INTEGER,
@@ -314,7 +306,7 @@ if st.button("Drop & Recreate Prediction Table"):
     st.success("✅ Table has been dropped and recreated.")
     st.dataframe(pd.DataFrame(columns=[
         "id", "timestamp", "income", "debt",
-        "r_debt_income", "t_expenditure_12",
+        "r_debt_income", 
         "t_gambling_12", "cat_savings_account",
         "r_expenditure", 
         "education_12",
