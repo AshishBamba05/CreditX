@@ -25,6 +25,8 @@ df = pd.read_csv("credit_score.csv")
 df = df.fillna(df.median(numeric_only=True)).round(0)
 
 df["R_EXPENDITURE"] = df["T_EXPENDITURE_6"] / (df["T_EXPENDITURE_12"] + 1)
+df["R_EDUCATION"] = df["T_EDUCATION_6"] / (df["T_EDUCATION_12"] + 1)
+
 
 FEATURES = [
     'R_DEBT_INCOME', 
@@ -32,7 +34,9 @@ FEATURES = [
     'T_GAMBLING_12',
     'CAT_SAVINGS_ACCOUNT', 
     'R_EXPENDITURE',
+    'R_EDUCATION'
 ]
+
 
 poor_samples = []
 for _ in range(35):
@@ -42,6 +46,7 @@ for _ in range(35):
        "T_GAMBLING_12": np.random.uniform(2000, 5000),
        "CAT_SAVINGS_ACCOUNT": 0,
        "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
+       "R_EDUCATION": np.random.uniform(0.3, 0.6),
        "DEFAULT": 1
    })
 
@@ -58,6 +63,7 @@ for _ in range(35):
        "T_GAMBLING_12": 0,
        "CAT_SAVINGS_ACCOUNT": 0,
        "R_EXPENDITURE": 0,
+       "R_EDUCATION": np.random.uniform(0.3, 0.6),
        "DEFAULT": 1
    })
 df_debt_only = pd.DataFrame(debt_only_samples)
@@ -72,6 +78,7 @@ for _ in range(30):
        "T_GAMBLING_12": np.random.uniform(8000, 20000),
        "CAT_SAVINGS_ACCOUNT": 0,
        "R_EXPENDITURE": np.random.uniform(0.45, 0.55),
+       "R_EDUCATION": np.random.uniform(0.3, 0.6),
        "DEFAULT": 1
    })
 
@@ -84,7 +91,7 @@ print(df_balanced["DEFAULT"].describe())
 
 # Separate continuous vs. binary categorical feature
 X_continuous = X.drop(columns=["CAT_SAVINGS_ACCOUNT"])
-X_cat = X[["CAT_SAVINGS_ACCOUNT"]].values  # keep as raw 0/1
+X_cat = X[["CAT_SAVINGS_ACCOUNT"]].values
 
 # Train/test split
 X_train_cont, X_test_cont, X_train_cat, X_test_cat, y_train, y_test = train_test_split(
@@ -127,6 +134,10 @@ expenditure_12 = st.number_input("12-Month Expenditure", min_value=0.0)
 expenditure_6 = st.number_input("6-Month Expenditure", min_value=0.0)
 gambling = st.number_input("Annual Gambling Spend", min_value=0.0)
 has_savings = st.checkbox("Do you have a savings account?")
+education_12 = st.number_input("12-Month Education Spend", min_value=0.0)
+education_6 = st.number_input("6-Month Education Spend", min_value=0.0)
+has_mortgage = st.checkbox("Do you currently have a mortgage?")
+
 
 if st.button("Predict Default Status"):
     r_debt_income = np.log1p(debt / (income + 1))
@@ -135,13 +146,16 @@ if st.button("Predict Default Status"):
     t_gambling_12 = gambling
     cat_savings_account = 1 if has_savings else 0
     r_expenditure = t_expenditure_6 / (t_expenditure_12 + 1)
+    r_education = education_6 / (education_12 + 1)
+    cat_mortgage = 1 if has_mortgage else 0
 
     user_input_cont = [[
     r_debt_income, t_expenditure_12,
     t_gambling_12,
-    r_expenditure,
+    r_expenditure, 
+    r_education
 ]]
-    user_input_cat = [[cat_savings_account]]
+    user_input_cat = [[cat_savings_account, cat_mortgage]]
 
     user_input_scaled_cont = scaler.transform(user_input_cont)
     user_input_final = np.hstack([user_input_scaled_cont, user_input_cat])
@@ -159,7 +173,11 @@ if st.button("Predict Default Status"):
         r_debt_income, t_expenditure_12,
         t_gambling_12,
         cat_savings_account,
-        r_expenditure, prediction
+        r_expenditure, 
+        education_12,
+        education_6,
+        r_education,
+        prediction
     )
 
     zero_fields = 0
@@ -273,6 +291,9 @@ if st.button("Drop & Recreate Prediction Table"):
             t_gambling_12 FLOAT,
             cat_savings_account INTEGER,
             r_expenditure FLOAT,
+            r_education FLOAT,
+            education_12 FLOAT,
+            education_6 FLOAT,
             score INTEGER
         )
     """)
@@ -285,5 +306,9 @@ if st.button("Drop & Recreate Prediction Table"):
         "id", "timestamp", "income", "debt",
         "r_debt_income", "t_expenditure_12",
         "t_gambling_12", "cat_savings_account",
-        "r_expenditure", "score"
+        "r_expenditure", 
+        "education_12",
+        "education_6",
+        "r_education",
+        "score"
     ]))

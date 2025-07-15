@@ -10,6 +10,9 @@ def get_connection():
 def insert_prediction(income, debt,
                       r_debt_income, t_expenditure_12,
                       t_gambling_12,
+                      education_12,
+                      education_6,
+                      r_education,
                       cat_savings_account,
                       r_expenditure, 
                       score):
@@ -23,13 +26,19 @@ def insert_prediction(income, debt,
         t_gambling_12,
         cat_savings_account, 
         r_expenditure, 
+        education_12,
+        education_6,
+        r_education,
         score
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         income, debt,
         r_debt_income, t_expenditure_12,
         t_gambling_12,
         cat_savings_account,
+        education_12,
+        education_6,
+        r_education,
         r_expenditure, 
         score
     ))
