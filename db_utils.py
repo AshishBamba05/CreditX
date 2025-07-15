@@ -15,7 +15,7 @@ def insert_prediction(income, debt,
                       r_education,
                       cat_savings_account,
                       cat_credit_card,
-                      r_expenditure, 
+                      r_expenditure,
                       score):
     conn = get_connection()
     cursor = conn.cursor()

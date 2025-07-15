@@ -22,7 +22,7 @@ cursor = conn.cursor()
 
 # --- Load & Prepare Dataset ---
 df = pd.read_csv("credit_score.csv")
-df = df.fillna(df.median(numeric_only=True)).round(0)
+df = df.fillna(df.mean(numeric_only=True)).round(0)
 
 df["R_EXPENDITURE"] = df["T_EXPENDITURE_6"] / (df["T_EXPENDITURE_12"] + 1)
 df["R_EDUCATION"] = df["T_EDUCATION_6"] / (df["T_EDUCATION_12"] + 1)
@@ -33,8 +33,7 @@ FEATURES = [
     'CAT_SAVINGS_ACCOUNT',
     'CAT_CREDIT_CARD',      
     'R_EXPENDITURE',
-    'R_EDUCATION'
-    
+    'R_EDUCATION',
 ]
 
 poor_samples = []
@@ -84,8 +83,59 @@ for _ in range(30):
 df_gambling = pd.DataFrame(gambling_risk_samples)
 df_balanced = pd.concat([df_balanced, df_gambling], ignore_index=True)
 
+midCredit_defaulters = []
+for _ in range(20):
+    midCredit_defaulters.append({
+        "R_DEBT_INCOME": np.random.uniform(1.2, 2.0),  # Not extreme, but risky
+        "T_EXPENDITURE_12": np.random.uniform(22000, 35000),
+        "T_GAMBLING_12": np.random.uniform(500, 1500),
+        "CAT_SAVINGS_ACCOUNT": 1,  # Gives the illusion of stability
+        "CAT_CREDIT_CARD": np.random.choice([0, 1]),
+        "R_EXPENDITURE": np.random.uniform(0.50, 0.65),  # High spend rate
+        "R_EDUCATION": np.random.uniform(0.3, 0.5),
+        "DEFAULT": 1
+    })
+
+df_midCredit_defaulters = pd.DataFrame(midCredit_defaulters)
+df_balanced = pd.concat([df_balanced, df_midCredit_defaulters], ignore_index=True)
+
+excellent_samples = []
+for _ in range(30):
+    excellent_samples.append({
+        "R_DEBT_INCOME": np.random.uniform(0.01, 0.05),
+        "T_EXPENDITURE_12": np.random.uniform(38000, 50000),
+        "T_GAMBLING_12": 0,
+        "CAT_SAVINGS_ACCOUNT": 1,
+        "CAT_CREDIT_CARD": 1,
+        "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
+        "R_EDUCATION": np.random.uniform(0.5, 0.7),
+        "DEFAULT": 0  # important for classification
+    })
+
+df_excellent = pd.DataFrame(excellent_samples)
+df_balanced = pd.concat([df_balanced, df_excellent], ignore_index=True)
+
+highCred_samples = []
+for _ in range(10):
+    highCred_samples.append({
+        "R_DEBT_INCOME": np.random.uniform(0.0, 0.02),
+        "T_EXPENDITURE_12": np.random.uniform(35000, 48000),
+        "T_GAMBLING_12": 0,
+        "CAT_SAVINGS_ACCOUNT": 1,
+        "CAT_CREDIT_CARD": 1,
+        "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
+        "R_EDUCATION": np.random.uniform(0.5, 0.7),
+        "R_HEALTH": np.random.uniform(0.5, 0.7),
+        "DEFAULT": 0
+    })
+
+df_highCred = pd.DataFrame(highCred_samples)
+df_balanced = pd.concat([df_balanced, df_highCred], ignore_index=True)
+
+
 X = df_balanced[FEATURES]
 y = df_balanced["DEFAULT"]
+
 print(df_balanced["DEFAULT"].describe())
 
 # Separate continuous vs. binary categorical feature
@@ -108,6 +158,15 @@ X_test_final = np.hstack([X_test_scaled_cont, X_test_cat])
 
 rf_model = RandomForestClassifier(n_estimators=115, max_depth=8, class_weight='balanced', random_state=42)
 rf_model.fit(X_train_final, y_train)
+
+# --- Feature Importance ---
+importances = rf_model.feature_importances_
+feature_names = FEATURES
+importance_df = pd.DataFrame({
+    'Feature': feature_names,
+    'Importance': importances
+}).sort_values(by='Importance', ascending=True)
+
 
 # --- Model Evaluation ---
 y_train_pred = rf_model.predict(X_train_final)
@@ -258,8 +317,28 @@ def style_by_default_flag(row):
         if row['score'] == 0 else ''
     ] * len(row)
 
-
 styled_df = prediction_df.style.apply(style_by_default_flag, axis=1)
+
+st.subheader("Feature Importance")
+
+fig = go.Figure(go.Bar(
+    x=importance_df['Importance'],
+    y=importance_df['Feature'],
+    orientation='h',
+    marker=dict(color='lightskyblue')
+))
+
+fig.update_layout(
+    xaxis_title="Importance",
+    yaxis_title="Feature",
+    title="Random Forest Feature Importances",
+    title_font_size=20,
+    margin=dict(l=100, r=20, t=40, b=20),
+    height=400
+)
+
+st.plotly_chart(fig, use_container_width=True)
+
 
 
 def style_score_cell(val):
