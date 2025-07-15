@@ -22,9 +22,10 @@ Once the input features are extracted, the model applies feature engineering to 
 - The application is deployed using **Streamlit**.
 
 ## 📊 Model Performance
+<img width="139" height="64" alt="Screen Shot 2025-07-14 at 11 59 56 PM" src="https://github.com/user-attachments/assets/d3a312b3-b509-4283-a18d-611c18279cca" />
 
-- ✅ **Accuracy**: 0.749
-- ✅ **Precision**: 0.638
+- ✅ **Accuracy**: 0.756
+- ✅ **Precision**: 0.6
 - ✅ **Recall**: 0.5
 - ✅ **F1 Score**: 0.561
 ---
