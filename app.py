@@ -7,7 +7,6 @@ import pandas as pd
 import sqlite3
 import plotly.graph_objects as go
 import numpy as np
-from xgboost import XGBClassifier
 
 
 from db_utils import (
@@ -201,7 +200,9 @@ if st.button("Predict Default Status"):
     t_gambling_12 = gambling
     savings_amount = savings
     r_expenditure = t_expenditure_6 / (t_expenditure_12 + 1)
+    r_expenditure = np.clip(r_expenditure, 0, 1)
     r_education = education_6 / (education_12 + 1)
+    r_education = np.clip(r_education, 0, 1)
     cat_credit_card = 1 if has_credit_card else 0
 
     user_input_cont = [[  
@@ -231,8 +232,6 @@ if st.button("Predict Default Status"):
         t_gambling_12,
         savings_amount, 
         r_expenditure, 
-        education_12,
-        education_6,
         r_education,
         cat_credit_card,
         prediction

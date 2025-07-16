@@ -12,6 +12,7 @@ def insert_prediction(income, debt,
                       t_gambling_12,
                       savings_amount,
                       r_expenditure,
+                      r_education,
                       cat_credit_card,
                       score):
 
@@ -25,15 +26,17 @@ def insert_prediction(income, debt,
             t_gambling_12,
             savings_amount,
             r_expenditure,
+            r_education,
             cat_credit_card,
             score
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         income, debt,
         r_debt_income,
         t_gambling_12,
         savings_amount,
         r_expenditure,
+        r_education,
         cat_credit_card,
         score
     ))
@@ -70,12 +73,9 @@ def fetch_predictions():
         income,
         debt,
         r_debt_income,
-        t_expenditure_12,
         t_gambling_12,
-        cat_savings_account,
+        savings_amount,
         r_expenditure,
-        education_12,
-        education_6,
         r_education,
         cat_credit_card,
         score,
