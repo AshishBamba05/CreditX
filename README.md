@@ -17,9 +17,6 @@ NOTE: Make sure you have Python 3.9+ and streamlit installed.
 To run the app locally,
 - `streamlit run app.py`
 
-## Usage
-- `streamlit run app.py`
-
 
 ## 💸 FinTech Background & What Model Does
 This project tackles a core challenge in financial technology: predicting credit default risk using customer behavior and spending patterns rather than traditional credit bureau data. In real-world fintech applications, accurate default prediction helps institutions:
