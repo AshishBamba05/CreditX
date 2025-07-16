@@ -48,12 +48,18 @@ Once the input features are extracted, the model applies feature engineering to 
   - print(df_balanced["DEFAULT"].describe())
     - **count    1373.000000**
       
-      **mean        0.478514** 
+      **mean        0.478514**
+      
       **std         0.499720**
+      
       **min         0.000000**
+      
       **25%         0.000000**
+      
       **50%         0.000000**
+      
       **75%         1.000000**
+      
       **max         1.000000** 
 
 To account for disproportionate impact, I used z-score normalization via `StandardScaler` to normalize all **continuous** variables
