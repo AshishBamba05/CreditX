@@ -102,11 +102,7 @@ The same procedure was applied for values the user inserted.
 
   <img width="704" height="401" alt="Screen Shot 2025-07-16 at 2 29 34 AM" src="https://github.com/user-attachments/assets/5d9ab709-5823-454a-b5cf-297d90eff482" />
 
-- I used **Random Forests (RFs)** from **Scikit-Learn** to build the predictive model, with the following hyperparemeters
-  - `n_estimators = 95`
-  - `max_depth = 12`
-  - `class_weight = balanced`
-  - `random_state = 42`
+- I used **Random Forests (RFs)** from **Scikit-Learn** to build the predictive model, with fine-tuned hyperparemeters for optimal accuracy:
  
   - ```
     rf_model = RandomForestClassifier(n_estimators=95, max_depth=12, class_weight='balanced', random_state=42)
