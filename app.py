@@ -66,7 +66,7 @@ X_test_scaled_cont = scaler.transform(X_test_cont)
 X_train_final = np.hstack([X_train_scaled_cont, X_train_cat])
 X_test_final = np.hstack([X_test_scaled_cont, X_test_cat])
 
-rf_model = RandomForestClassifier(n_estimators=115, max_depth=8, class_weight='balanced', random_state=42)
+rf_model = RandomForestClassifier(n_estimators=95, max_depth=12, class_weight='balanced', random_state=42)
 rf_model.fit(X_train_final, y_train)
 
 # --- Feature Importance ---
