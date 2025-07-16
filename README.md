@@ -13,14 +13,16 @@
 - The model is trained on a [Kaggle dataset](https://www.kaggle.com/datasets/conorsully1/credit-score) and split using an 80/20 train-test ratio.
 Once the input features are extracted, the model applies feature engineering to derive additional signals:
 
-- `r_debt_income = debt / (income + 1)` — normalized debt-to-income ratio  
-- `r_expenditure = t_expenditure_12 / (t_expenditure_6 + 1)` — normalized full- to mid - year expenditure 
-- `savings = savings_amount` - total annual savings
-- `r_education = t_education_12 / (t_education_6 + 1)` - normalized full to mid year education spending
-- `cat_credit_card = 1 if has_credit_card else 0` - user's credit card status
-- `t_gambling_12 = gambling` - annual gambling expenditure
+  - `r_debt_income = debt / (income + 1)` — normalized debt-to-income ratio  
+  - `r_expenditure = t_expenditure_12 / (t_expenditure_6 + 1)` — normalized full- to mid - year expenditure 
+  - `savings = savings_amount` - total annual savings
+  - `r_education = t_education_12 / (t_education_6 + 1)` - normalized full to mid year education spending
+  - `cat_credit_card = 1 if has_credit_card else 0` - user's credit card status
+  - `t_gambling_12 = gambling` - annual gambling expenditure
 
-- I used **Random Forests (RFs)** from **Scikit-Learn** to build the predictive model.
+- I used **Random Forests (RFs)** from **Scikit-Learn** to build the predictive model, with the following hyperparemeters
+  - `n_estimators = 95`
+  - `max_depth = 12`
 - The application is deployed using **Streamlit**.
 
 ## 📊 Model Performance
