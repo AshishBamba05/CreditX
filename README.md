@@ -10,7 +10,7 @@
 
 ## 🚀 How It Works
 
-- The model is trained on a [Kaggle dataset](https://www.kaggle.com/datasets/conorsully1/credit-score) and split using an 75/25 train-test ratio.
+- The model is trained on a [Kaggle dataset](https://www.kaggle.com/datasets/conorsully1/credit-score) and split using an 80/20 train-test ratio.
 Once the input features are extracted, the model applies feature engineering to derive additional signals:
 
 - `r_debt_income = debt / (income + 1)` — normalized debt-to-income ratio  
