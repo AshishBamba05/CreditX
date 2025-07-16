@@ -19,7 +19,7 @@ To run the app locally,
 
 
 ## 💸 Overview
-A 10-second pitch: Where financial intelligence meets machine learning, meet FinRisk, a FinIntel tool that helps predict credit default risk using customer behavior and spending patterns rather than traditional credit bureau data. In real-world fintech applications, accurate default prediction helps institutions:
+A 10-second pitch: Where financial intelligence meets machine learning, meet FinRisk, a FinIntel tool that helps predict financial default risk using customer behavior and spending patterns rather than traditional credit bureau data. In real-world fintech applications, accurate default prediction helps institutions:
 
 - 📈 Reduce financial losses
 
