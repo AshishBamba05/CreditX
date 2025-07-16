@@ -12,9 +12,6 @@ def insert_prediction(income, debt,
                       t_gambling_12,
                       savings_amount,
                       r_expenditure,
-                      education_12,
-                      education_6,
-                      r_education,
                       cat_credit_card,
                       score):
 
@@ -28,9 +25,6 @@ def insert_prediction(income, debt,
             t_gambling_12,
             savings_amount,
             r_expenditure,
-            education_12,
-            education_6,
-            r_education,
             cat_credit_card,
             score
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -40,9 +34,6 @@ def insert_prediction(income, debt,
         t_gambling_12,
         savings_amount,
         r_expenditure,
-        education_12,
-        education_6,
-        r_education,
         cat_credit_card,
         score
     ))

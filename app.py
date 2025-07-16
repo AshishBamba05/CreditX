@@ -7,6 +7,8 @@ import pandas as pd
 import sqlite3
 import plotly.graph_objects as go
 import numpy as np
+from xgboost import XGBClassifier
+
 
 from db_utils import (
     insert_prediction,
@@ -41,7 +43,7 @@ for _ in range(35):
    poor_samples.append({
        "R_DEBT_INCOME": np.random.uniform(1.5, 5.0),  # Very high ratio
        "T_GAMBLING_12": np.random.uniform(2000, 5000),
-       "SAVINGS_ACCOUNT": 0,
+       "SAVINGS": 0,
        "CAT_CREDIT_CARD": np.random.choice([0, 1]),
        "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
        "R_EDUCATION": np.random.uniform(0.3, 0.6),
@@ -70,6 +72,7 @@ df_balanced = pd.concat([df_balanced, df_debt_only], ignore_index=True)
 # --- Synthetic: Gambling-Heavy Risk Profiles ---
 gambling_risk_samples = []
 for _ in range(30):
+
    gambling_risk_samples.append({
        "R_DEBT_INCOME": np.random.uniform(1.0, 3.5),
        "T_GAMBLING_12": np.random.uniform(8000, 20000),
@@ -87,7 +90,6 @@ midCredit_defaulters = []
 for _ in range(20):
     midCredit_defaulters.append({
         "R_DEBT_INCOME": np.random.uniform(1.2, 2.0),  # Not extreme, but risky
-        "T_EXPENDITURE_12": np.random.uniform(22000, 35000),
         "T_GAMBLING_12": np.random.uniform(500, 1500),
         "SAVINGS": np.random.uniform(5000, 25000),
         "CAT_CREDIT_CARD": np.random.choice([0, 1]),
@@ -103,7 +105,6 @@ excellent_samples = []
 for _ in range(30):
     excellent_samples.append({
         "R_DEBT_INCOME": np.random.uniform(0.01, 0.05),
-        "T_EXPENDITURE_12": np.random.uniform(38000, 50000),
         "T_GAMBLING_12": 0,
         "SAVINGS": np.random.uniform(5000, 25000),
         "CAT_CREDIT_CARD": 1,
@@ -119,20 +120,16 @@ highCred_samples = []
 for _ in range(10):
     highCred_samples.append({
         "R_DEBT_INCOME": np.random.uniform(0.0, 0.02),
-        "T_EXPENDITURE_12": np.random.uniform(35000, 48000),
         "T_GAMBLING_12": 0,
         "SAVINGS": np.random.uniform(5000, 25000),
         "CAT_CREDIT_CARD": 1,
         "R_EXPENDITURE": np.random.uniform(0.48, 0.52),
         "R_EDUCATION": np.random.uniform(0.5, 0.7),
-        "R_HEALTH": np.random.uniform(0.5, 0.7),
         "DEFAULT": 0
     })
 
 df_highCred = pd.DataFrame(highCred_samples)
 df_balanced = pd.concat([df_balanced, df_highCred], ignore_index=True)
-
-
 X = df_balanced[FEATURES]
 y = df_balanced["DEFAULT"]
 
@@ -207,12 +204,12 @@ if st.button("Predict Default Status"):
     r_education = education_6 / (education_12 + 1)
     cat_credit_card = 1 if has_credit_card else 0
 
-    user_input_cont = [[
+    user_input_cont = [[  
     r_debt_income, 
     t_gambling_12,
     savings,
     r_expenditure, 
-    r_education
+    r_education,
 ]]
 
     user_input_cat = [[cat_credit_card]]
