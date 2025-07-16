@@ -7,6 +7,20 @@
 👉 [Launch CreditX](https://creditx-nyywptbpkg9gkmtym5qeam.streamlit.app/) (Recommended: use **Chrome**)  
 ⚠️ *Safari may have display issues due to JavaScript compatibility.*
 
+## Installation
+- `git clone https://github.com/yourusername/creditx.git`
+- `cd creditx`
+- `pip install -r requirements.txt`
+
+NOTE: Make sure you have Python 3.9+ and streamlit installed.
+
+To run the app locally,
+- `streamlit run app.py`
+
+## Usage
+- `streamlit run app.py`
+
+
 ## 💸 FinTech Background & What Model Does
 This project tackles a core challenge in financial technology: predicting credit default risk using customer behavior and spending patterns rather than traditional credit bureau data. In real-world fintech applications, accurate default prediction helps institutions:
 
@@ -42,15 +56,6 @@ Once the input features are extracted, the model applies feature engineering to 
   - `max_depth = 12`
 - The application is deployed using **Streamlit**.
 
-## Installation
-- `git clone https://github.com/yourusername/creditx.git`
-- `cd creditx`
-- `pip install -r requirements.txt`
-
-NOTE: Make sure you have Python 3.9+ and streamlit installed.
-
-To run the app locally,
-- `streamlit run app.py`
 
 ## 📊 Model Performance
 
