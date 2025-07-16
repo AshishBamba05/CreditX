@@ -8,7 +8,7 @@
 ⚠️ *Safari may have display issues due to JavaScript compatibility.*
 
 ## 💸 FinTech Background & What Model Does
-This project tackles a core challenge in financial technology: predicting loan default risk using customer behavior and spending patterns rather than traditional credit bureau data. In real-world fintech applications, accurate default prediction helps institutions:
+This project tackles a core challenge in financial technology: predicting credit default risk using customer behavior and spending patterns rather than traditional credit bureau data. In real-world fintech applications, accurate default prediction helps institutions:
 
 - Reduce financial losses
 
