@@ -44,7 +44,7 @@ Once the input features are extracted, the model applies feature engineering to 
   - `cat_credit_card = 1 if has_credit_card else 0` - user's credit card status
   - `t_gambling_12 = gambling` - annual gambling expenditure
     
-- Since the dataset initially featured heavy class imbalance (Non-default > default), I added 373 randomly generated rows (~25%) where `default == 1`.
+- Since the dataset initially featured heavy class imbalance (Non-default > default), I inserted 373 randomly synthesized rows (~25%) where `default == 1` into my dataframe
 
 - Using `Pandas` library to concatenate the initial and altered dataframes, here is the description of the new dataframe:
   - `print(df_balanced["DEFAULT"].describe())`
