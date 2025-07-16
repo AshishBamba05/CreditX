@@ -69,9 +69,23 @@ Once raw input features (like `debt, income, mid-/full- year expenditure funds, 
 To account for disproportionate impact, I used z-score normalization via the `StandardScaler` library to normalize all **continuous** variables
 
   ```
+# Separate continuous vs. binary categorical feature
+  X_continuous = X.drop(columns=["CAT_CREDIT_CARD"])
+  X_cat = X[["CAT_CREDIT_CARD"]].values
+
+# Train/test split
+  X_train_cont, X_test_cont, X_train_cat, X_test_cat, y_train, y_test = train_test_split(
+    X_continuous, X_cat, y, test_size=0.2, random_state=42
+  )
+
+# Scale only continuous features
   scaler = StandardScaler()
   X_train_scaled_cont = scaler.fit_transform(X_train_cont)
   X_test_scaled_cont = scaler.transform(X_test_cont)
+
+# Combine scaled continuous + unscaled categorical
+  X_train_final = np.hstack([X_train_scaled_cont, X_train_cat])
+  X_test_final = np.hstack([X_test_scaled_cont, X_test_cat])
   
   ```
 
