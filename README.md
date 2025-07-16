@@ -20,7 +20,7 @@ Once the input features are extracted, the model applies feature engineering to 
 - `cat_credit_card = 1 if has_credit_card else 0` - user's credit card status
 - `t_gambling_12 = gambling` - annual gambling expenditure
 
-- I used **Support Vector Machines (SVMs)** from **Scikit-Learn** to build the predictive model.
+- I used **Random Forests (RFs)** from **Scikit-Learn** to build the predictive model.
 - The application is deployed using **Streamlit**.
 
 ## 📊 Model Performance
