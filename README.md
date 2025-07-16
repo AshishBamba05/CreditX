@@ -45,12 +45,6 @@ Once the input features are extracted, the model applies feature engineering to 
   - `t_gambling_12 = gambling` - annual gambling expenditure
     
 - Since the dataset initially featured heavy class imbalance (Non-default > default), I added 373 randomly generated rows (~25%) where `default == 1`.
-  ```
-  scaler = StandardScaler()
-  X_train_scaled_cont = scaler.fit_transform(X_train_cont)
-  X_test_scaled_cont = scaler.transform(X_test_cont)
-  
-  ```
 
 - Using `Panndas` library to concatenate the initialband altered dataframes, here is the dataframe description of the new dataframe:
   - `print(df_balanced["DEFAULT"].describe())`
@@ -73,6 +67,13 @@ Once the input features are extracted, the model applies feature engineering to 
       ```
 
 To account for disproportionate impact, I used z-score normalization via `StandardScaler` to normalize all **continuous** variables
+
+  ```
+  scaler = StandardScaler()
+  X_train_scaled_cont = scaler.fit_transform(X_train_cont)
+  X_test_scaled_cont = scaler.transform(X_test_cont)
+  
+  ```
 
  All things considered, here is how my model ranked each features in terms of predictive value:
 
