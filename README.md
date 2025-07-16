@@ -76,6 +76,7 @@ To account for disproportionate impact, I used z-score normalization via the `St
   ```
 
 The same procedure was applied for values the user inserted.
+
     ```
     user_input_cont = [[ r_debt_income, t_gambling_12, savings, r_expenditure, r_education]]
     user_input_cat = [[cat_credit_card]]
