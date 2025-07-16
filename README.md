@@ -21,6 +21,7 @@ Once the input features are extracted, the model applies feature engineering to 
   - `t_gambling_12 = gambling` - annual gambling expenditure
 
  All things considered, here is how my model ranked each features in terms of predictive value:
+ 
    -<img width="725" height="453" alt="Screen Shot 2025-07-16 at 2 26 00 AM" src="https://github.com/user-attachments/assets/c9ebeb23-a107-493c-b8b4-69d0e5f7aa37" />
 
 
