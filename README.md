@@ -91,6 +91,15 @@ The same procedure was applied for values the user inserted.
 - I used **Random Forests (RFs)** from **Scikit-Learn** to build the predictive model, with the following hyperparemeters
   - `n_estimators = 95`
   - `max_depth = 12`
+  - `class_weight = balanced`
+  - `random_state = 42`
+ 
+  - ```
+    rf_model = RandomForestClassifier(n_estimators=95, max_depth=12, class_weight='balanced', random_state=42)
+    rf_model.fit(X_train_final, y_train)
+    
+    ```
+    
 - The application is deployed using **Streamlit**.
 
 
