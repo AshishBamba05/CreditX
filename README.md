@@ -7,6 +7,19 @@
 👉 [Launch CreditX](https://creditx-nyywptbpkg9gkmtym5qeam.streamlit.app/) (Recommended: use **Chrome**)  
 ⚠️ *Safari may have display issues due to JavaScript compatibility.*
 
+## 💸 FinTech Background & What Model Does
+This project tackles a core challenge in financial technology: predicting loan default risk using customer behavior and spending patterns rather than traditional credit bureau data. In real-world fintech applications, accurate default prediction helps institutions:
+
+- Reduce financial losses
+
+- Make smarter lending decisions
+
+- Serve underbanked populations without formal credit history
+
+The model is trained on a structured dataset containing customer-level financial indicators—such as income, debt, savings, and categorical flags like credit card or savings account ownership. It leverages classic machine learning (Random Forest Classifier via Scikit-learn) to predict the likelihood of default with high precision and recall.
+
+The system prioritizes recall to capture as many potential defaulters as possible while maintaining solid overall performance (F1 score and accuracy). It's an interpretable, production-ready approach, well-suited for real-world financial screening workflows.
+
 
 ## 🚀 How It Works
 
