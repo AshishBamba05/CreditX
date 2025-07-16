@@ -84,7 +84,7 @@ The same procedure was applied for values the user inserted.
     user_input_final = np.hstack([user_input_scaled_cont, user_input_cat])
     ```
 
- All things considered, here is how my model ranked each features in terms of predictive value: 
+ All things considered, here is how my model ranked each feature in terms of predictive value across the board: 
 
   <img width="704" height="401" alt="Screen Shot 2025-07-16 at 2 29 34 AM" src="https://github.com/user-attachments/assets/5d9ab709-5823-454a-b5cf-297d90eff482" />
 
