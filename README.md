@@ -45,6 +45,13 @@ Once raw input features (like `debt, income, mid-/full- year expenditure funds, 
   - `t_gambling_12 = gambling` - annual gambling expenditure
     
 - Since the dataset initially featured heavy class imbalance (Non-default > default), I inserted 373 randomly synthesized rows (~25%) where `default == 1` into my dataframe
+  - ```
+      df_high = df[df["DEFAULT"] == 1]
+      df_balanced = pd.concat([
+       df,
+       df_high.sample(n=373, replace=True, random_state=42)
+      ])
+    ```
 
 - Using `Pandas` library to concatenate the initial and altered dataframes, here is the description of the new dataframe:
   - `print(df_balanced["DEFAULT"].describe())`
