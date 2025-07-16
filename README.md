@@ -35,7 +35,7 @@ The system prioritizes recall to capture as many potential defaulters as possibl
 ## 🚀 How It Works
 
 - The model is trained on a [Kaggle dataset](https://www.kaggle.com/datasets/conorsully1/credit-score) and split using an 80/20 train-test ratio.
-Once raw input features (like `debt, income, mid-/full- year expenditure funds, mid-/full- year education funds, etc.`) are extracted, the model applies feature engineering to derive additional signals:
+Once raw input features (like `debt, income, mid-/full- year expenditure funds, mid-/full- year education funds, etc.`) are extracted, the model applies **feature engineering** to derive additional signals:
 
   - `r_debt_income = debt / (income + 1)` — debt-to-income ratio  
   - `r_expenditure = t_expenditure_12 / (t_expenditure_6 + 1)` — full- to mid- year expenditure ratio
