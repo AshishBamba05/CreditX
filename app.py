@@ -180,7 +180,9 @@ print(f"F1 Score: {f1:.3f}")
 
 
 # --- Streamlit UI ---
-st.title("Credit Score Predictor | By Ashish V Bamba")
+st.title("Defaulter.ai")
+st.write("A financial behavior-based default classifier")
+st.caption("By Ashish V Bamba | [GitHub](https://github.com/ashishvbamba) | [LinkedIn](https://www.linkedin.com/in/ashishvbamba/)")
 
 income = st.number_input("Annual Income", min_value=0.0)
 debt = st.number_input("Total Debt", min_value=0.0)
