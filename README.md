@@ -4,7 +4,7 @@
 
 ## 🔗 Launch the App
 
-👉 [Launch CreditX](https://creditx-nyywptbpkg9gkmtym5qeam.streamlit.app/) (Recommended: use **Chrome**)  
+👉 [Launch FinRisk.AI](https://creditx-nyywptbpkg9gkmtym5qeam.streamlit.app/) (Recommended: use **Chrome**)  
 ⚠️ *Safari may have display issues due to JavaScript compatibility.*
 
 ## 🖥 Installation
