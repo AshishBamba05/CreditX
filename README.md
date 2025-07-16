@@ -7,7 +7,7 @@
 👉 [Launch CreditX](https://creditx-nyywptbpkg9gkmtym5qeam.streamlit.app/) (Recommended: use **Chrome**)  
 ⚠️ *Safari may have display issues due to JavaScript compatibility.*
 
-## Installation
+## 🖥 Installation
 - `git clone https://github.com/yourusername/creditx.git`
 - `cd creditx`
 - `pip install -r requirements.txt`
