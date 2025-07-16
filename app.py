@@ -54,7 +54,7 @@ X_cat = X[["CAT_CREDIT_CARD"]].values
 
 # Train/test split
 X_train_cont, X_test_cont, X_train_cat, X_test_cat, y_train, y_test = train_test_split(
-    X_continuous, X_cat, y, test_size=0.25, random_state=42
+    X_continuous, X_cat, y, test_size=0.2, random_state=42
 )
 
 # Scale only continuous features
