@@ -20,6 +20,10 @@ Once the input features are extracted, the model applies feature engineering to 
   - `cat_credit_card = 1 if has_credit_card else 0` - user's credit card status
   - `t_gambling_12 = gambling` - annual gambling expenditure
 
+ All things considered, here is how my model ranked each features in terms of predictive value:
+   -<img width="725" height="453" alt="Screen Shot 2025-07-16 at 2 26 00 AM" src="https://github.com/user-attachments/assets/c9ebeb23-a107-493c-b8b4-69d0e5f7aa37" />
+
+
 - I used **Random Forests (RFs)** from **Scikit-Learn** to build the predictive model, with the following hyperparemeters
   - `n_estimators = 95`
   - `max_depth = 12`
