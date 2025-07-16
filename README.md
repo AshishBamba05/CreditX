@@ -46,7 +46,7 @@ Once the input features are extracted, the model applies feature engineering to 
     
 - Since the dataset initially featured heavy class imbalance (Non-default > default), I added 373 randomly generated rows (~25%) where `default == 1`.
 
-- Using `Panndas` library to concatenate the initialband altered dataframes, here is the dataframe description of the new dataframe:
+- Using `Pandas` library to concatenate the initialband altered dataframes, here is the dataframe description of the new dataframe:
   - `print(df_balanced["DEFAULT"].describe())`
     - ```
       count    1373.000000
