@@ -37,12 +37,27 @@ The system prioritizes recall to capture as many potential defaulters as possibl
 - The model is trained on a [Kaggle dataset](https://www.kaggle.com/datasets/conorsully1/credit-score) and split using an 80/20 train-test ratio.
 Once the input features are extracted, the model applies feature engineering to derive additional signals:
 
-  - `r_debt_income = debt / (income + 1)` — normalized debt-to-income ratio  
-  - `r_expenditure = t_expenditure_12 / (t_expenditure_6 + 1)` — normalized full- to mid - year expenditure 
+  - `r_debt_income = debt / (income + 1)` — debt-to-income ratio  
+  - `r_expenditure = t_expenditure_12 / (t_expenditure_6 + 1)` — full- to mid- year expenditure ratio
   - `savings = savings_amount` - total annual savings
-  - `r_education = t_education_12 / (t_education_6 + 1)` - normalized full to mid year education spending
+  - `r_education = t_education_12 / (t_education_6 + 1)` - full- to mid- year education spending
   - `cat_credit_card = 1 if has_credit_card else 0` - user's credit card status
   - `t_gambling_12 = gambling` - annual gambling expenditure
+    
+- Since the dataset initially featured heavy class imbalance (Non-default > default), I added 373 randomly generated rows (~25%) where `default == 1`. Using `Panndas` library to concatenate the initialband altered dataframes, here is the dataframe description of the new dataframe:
+  - print(df_balanced["DEFAULT"].describe())
+    - **count    1373.000000**
+      **mean        0.478514**
+      **std         0.499720**
+      **min         0.000000**
+      **25%         0.000000**
+      **50%         0.000000**
+      **75%         1.000000**
+      **max         1.000000** 
+
+    
+  - To account for disproportionate impact, I used z-score normalization via `StandardScaler` to normalize all **continuous** variables
+    -  
 
  All things considered, here is how my model ranked each features in terms of predictive value:
 
