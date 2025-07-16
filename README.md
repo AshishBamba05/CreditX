@@ -1,6 +1,6 @@
 # 💳 CreditX
 
-**CreditX** is a machine learning web app that predicts a user's credit score based on financial data including income, savings, debt, and annual expenditure.
+**CreditX** is a machine learning web app that predicts whether a user will financially default based on financial data including income, savings, debt, and annual expenditure.
 
 ## 🔗 Launch the App
 
@@ -14,9 +14,11 @@
 Once the input features are extracted, the model applies feature engineering to derive additional signals:
 
 - `r_debt_income = debt / (income + 1)` — normalized debt-to-income ratio  
-- `t_expenditure_12 = expenditure` — annual expenditure baseline  
+- `r_expenditure = t_expenditure_12 / (t_expenditure_6 + 1)` — normalized full- to mid - year expenditure 
+- `savings = savings_amount` - total annual savings
+- `r_education = t_education_12 / (t_education_6 + 1)` - normalized full to mid year education spending
+- `cat_credit_card = 1 if has_credit_card else 0` - user's credit card status
 - `t_gambling_12 = gambling` - annual gambling expenditure
-- `t_health_12 = gambling` - annual health expenditure
 
 - I used **Support Vector Machines (SVMs)** from **Scikit-Learn** to build the predictive model.
 - The application is deployed using **Streamlit**.
