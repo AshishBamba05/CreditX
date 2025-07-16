@@ -1,6 +1,6 @@
-# 💳 FinRisk
+# 💳 FinRisk.AI
 
-**CreditX** is a machine learning web app that predicts whether a user will financially default based on financial data including income, savings, debt, and annual expenditure.
+**FinRisk** is a machine learning web app that predicts whether a user will financially default based on financial data including income, savings, debt, and annual expenditure.
 
 ## 🔗 Launch the App
 
