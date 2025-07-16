@@ -94,7 +94,7 @@ print(f"F1 Score: {f1:.3f}")
 
 
 # --- Streamlit UI ---
-st.title("Defaulter.ai")
+st.title("FinRisk.AI")
 st.subheader("A financial intelligence tool for predicting default from behavioral and spending patterns")
 st.caption("By Ashish V Bamba | [GitHub](https://github.com/ashishvbamba) | [LinkedIn](https://www.linkedin.com/in/ashishvbamba/)")
 
@@ -130,7 +130,6 @@ if st.button("Predict Default Status"):
 ]]
 
     user_input_cat = [[cat_credit_card]]
-
     user_input_scaled_cont = scaler.transform(user_input_cont)
     user_input_final = np.hstack([user_input_scaled_cont, user_input_cat])
 
