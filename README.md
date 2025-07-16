@@ -46,8 +46,8 @@ Once the input features are extracted, the model applies feature engineering to 
     
 - Since the dataset initially featured heavy class imbalance (Non-default > default), I added 373 randomly generated rows (~25%) where `default == 1`. Using `Panndas` library to concatenate the initialband altered dataframes, here is the dataframe description of the new dataframe:
   - print(df_balanced["DEFAULT"].describe())
-    - **count    1373.000000**
-      **mean        0.478514**
+    - **count    1373.000000** \n
+      **mean        0.478514** \n
       **std         0.499720**
       **min         0.000000**
       **25%         0.000000**
@@ -55,9 +55,7 @@ Once the input features are extracted, the model applies feature engineering to 
       **75%         1.000000**
       **max         1.000000** 
 
-    
-  - To account for disproportionate impact, I used z-score normalization via `StandardScaler` to normalize all **continuous** variables
-    -  
+To account for disproportionate impact, I used z-score normalization via `StandardScaler` to normalize all **continuous** variables
 
  All things considered, here is how my model ranked each features in terms of predictive value:
 
