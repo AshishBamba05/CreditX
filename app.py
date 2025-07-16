@@ -96,7 +96,7 @@ print(f"F1 Score: {f1:.3f}")
 # --- Streamlit UI ---
 st.title("FinRisk.AI")
 st.subheader("A financial intelligence tool for predicting default from behavioral and spending patterns")
-st.caption("By Ashish V Bamba | [GitHub](https://github.com/ashishvbamba) | [LinkedIn](https://www.linkedin.com/in/ashishvbamba/)")
+st.caption("By Ashish V Bamba | [GitHub](https://github.com/AshishBamba05/FinRisk.AI) | [LinkedIn](https://www.linkedin.com/in/ashishbamba/)")
 
 income = st.number_input("Annual Income", min_value=0.0)
 debt = st.number_input("Total Debt", min_value=0.0)
