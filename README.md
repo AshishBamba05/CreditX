@@ -119,7 +119,7 @@ The same procedure was applied for values the user inserted.
 
 - ✅ **Accuracy**: 0.653
 - ✅ **Precision**: 0.181
-- ✅ **Recall**: 0.567
-- ✅ **F1 Score**: 0.274
+- ✅ **Recall**: 0.571
+- ✅ **F1 Score**: 0.275
 ---
 
