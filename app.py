@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from imblearn.over_sampling import SMOTE
 from imblearn.combine import SMOTEENN
+from imblearn.over_sampling import ADASYN
 from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 import sqlite3
@@ -27,6 +28,9 @@ conn = get_connection()
 cursor = conn.cursor()
 
 # --- Load & Prepare Dataset ---
+
+
+
 @st.cache_data
 def load_data():
     df = pd.read_csv("Loan_default.csv")
@@ -46,6 +50,8 @@ def preprocess_data(df):
     df["Education"] = df["Education"].map({"Bachelor's": 0, "High School": 1, "Other": 2}).fillna(0).astype(int)
     df["LoanPurpose"] = df["LoanPurpose"].map({"Business": 0, "Home": 1, "Other": 2}).fillna(0).astype(int)
     df["Education_LoanPurpose"] = df["Education"].astype(str) + "_" + df["LoanPurpose"].astype(str)
+    df["R_SCORE_PER_LINE"] = df["CreditScore"] / (df["NumCreditLines"] + 1)
+
     return df
 df = preprocess_data(df)
 
@@ -56,6 +62,7 @@ continuous_features = [
     'R_INTEREST_BURDEN',
     'R_CREDIT_UTIL',
     'R_MONTHS_EMPLOYED',
+    'R_SCORE_PER_LINE'
 ]
 
 categorical_features = ['HasCoSigner', 'HasMortgage', 'Education_LoanPurpose']
@@ -140,6 +147,7 @@ loan_term = st.number_input("Loan Term (in months)", min_value=1)
 credit_score = st.number_input("Credit Score", min_value=0)
 has_coSigner = st.checkbox("Do you have a co-signer?", help="Select if another person is legally responsible for this loan with you.")
 has_mortgage = st.checkbox("Do you have a mortgage?", help="Select if you have a mortgage on this loan.")
+credit_lines = st.number_input("Number of Credit Lines", min_value=0)
 education = st.selectbox(
     "Highest Education Level",
     ["Bachelor's", "High School", "Other"]
@@ -149,6 +157,8 @@ loan_purpose = st.selectbox(
     ["Business", "Home", "Other"]
 )
 
+st.write()
+
 
 if st.button("Predict Default Status"):
     r_loan_income = loan_amount / (income + 1)
@@ -157,6 +167,15 @@ if st.button("Predict Default Status"):
     r_months_employed = months_employed / (age + 1)
     has_coSigner = 1 if has_coSigner else 0
     has_mortgage = 1 if has_mortgage else 0
+    r_score_per_line = credit_score / (credit_lines + 1)
+
+    loan_purpose_map = {
+        "Business": 0,
+        "Home": 1,
+        "Other": 2
+    }
+    loan_purpose = loan_purpose_map.get(loan_purpose, 2)
+
     education_map = {
         "Bachelor's": 0,
         "High School": 1,
@@ -172,7 +191,9 @@ if st.button("Predict Default Status"):
     has_coSigner,
     has_mortgage,
     loan_purpose,
-    education
+    education,
+    r_loan_per_line,
+    r_credit_lines_income
 ]]
 
     user_input_scaled = scaler.transform(user_input)
@@ -194,6 +215,7 @@ if st.button("Predict Default Status"):
         has_mortgage,
         loan_purpose,
         education,
+        credit_lines,
         prediction
     )
 
@@ -202,7 +224,7 @@ if st.button("Predict Default Status"):
     fields_to_check = [
         income, age, months_employed, loan_amount, interest_rate,  
         has_coSigner, has_mortgage, loan_term, credit_score, education,
-        loan_purpose
+        loan_purpose, credit_lines
     ]
 
     for val in fields_to_check:
@@ -333,6 +355,7 @@ if st.button("Drop & Recreate Prediction Table"):
             has_mortgage INT,
             education INT,
             loan_purpose INT,
+            numCreditLines INT,
             score INTEGER
         )
     """)
@@ -345,6 +368,6 @@ if st.button("Drop & Recreate Prediction Table"):
         "id", "timestamp", "income", "loan_amount",
         "age", "months_employed", 
         "interest_rate", "loan_term", "credit_score", "has_coSigner",
-        "education", "loan_purpose",
+        "education", "loan_purpose", "numCreditLines",
          "has_mortgage", "score"
     ]))

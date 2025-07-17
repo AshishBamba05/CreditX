@@ -12,6 +12,7 @@ def insert_prediction(income, age, months_employed,
                       loan_amount, interest_rate,
                       loan_term, credit_score,
                       education, 
+                      numCreditLines,
                       loan_purpose,
                       has_coSigner, has_mortgage,
                       score):
@@ -29,11 +30,12 @@ def insert_prediction(income, age, months_employed,
             loan_term,
             credit_score,
             education,
+            numCreditLines,
             loan_purpose,
             has_coSigner,
             has_mortgage,
             score
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         income,
         age,
@@ -46,6 +48,7 @@ def insert_prediction(income, age, months_employed,
         credit_score,
         has_coSigner,
         has_mortgage,
+        numCreditLines,
         score
     ))
 
@@ -89,6 +92,7 @@ def fetch_predictions():
         loan_purpose,
         has_coSigner,
         has_mortgage,
+        numCreditLines,
         score,
         CASE
             WHEN score = 1 THEN '🔴 Default'

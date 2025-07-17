@@ -23,6 +23,7 @@ cursor.execute("""
         has_mortgage INTEGER,
         loan_purpose INTEGER,
         education INTEGER,
+        numCreditLines INTEGER,
         score INTEGER
     )
 """)
