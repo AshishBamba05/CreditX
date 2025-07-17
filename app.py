@@ -44,12 +44,10 @@ def preprocess_data(df):
     #df["R_LOAN_INCOME"] = df["LoanAmount"] / (df["Income"] + 1)
     df["R_INTEREST_BURDEN"] = df["InterestRate"] * df["LoanTerm"]
     df["R_CREDIT_UTIL"] = df["LoanAmount"] / (df["CreditScore"] + 1)
-    df["R_MONTHS_EMPLOYED"] = df["MonthsEmployed"] / (df["Age"] + 1)
     df["HasCoSigner"] = df["HasCoSigner"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
     df["HasMortgage"] = df["HasMortgage"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
     df["Education"] = df["Education"].map({"Bachelor's": 0, "High School": 1, "Other": 2}).fillna(0).astype(int)
     df["LoanPurpose"] = df["LoanPurpose"].map({"Business": 0, "Home": 1, "Other": 2}).fillna(0).astype(int)
-    df["Education_LoanPurpose"] = df["Education"].astype(str) + "_" + df["LoanPurpose"].astype(str)
     df["R_SCORE_PER_LINE"] = df["CreditScore"] / (df["NumCreditLines"] + 1)
 
     return df
@@ -59,13 +57,14 @@ print(df["Default"].describe())
 
 continuous_features = [
     'Income',
+    'Age',
     'R_INTEREST_BURDEN',
     'R_CREDIT_UTIL',
-    'R_MONTHS_EMPLOYED',
+    'MonthsEmployed',
     'R_SCORE_PER_LINE'
 ]
 
-categorical_features = ['HasCoSigner', 'HasMortgage', 'Education_LoanPurpose']
+categorical_features = ['HasCoSigner', 'HasMortgage', 'Education']
 feature_names = continuous_features + categorical_features
 
 # 1. Start with original, unbalanced data
