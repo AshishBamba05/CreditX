@@ -10,6 +10,10 @@ import plotly.graph_objects as go
 import numpy as np
 from collections import Counter
 from sklearn.compose import ColumnTransformer
+from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
+from catboost import CatBoostClassifier
+
 
 
 from db_utils import (
@@ -81,10 +85,12 @@ smote = SMOTE(sampling_strategy=0.8, random_state=42, k_neighbors=5, n_jobs = 7)
 X_train_smote, y_train_smote = smote.fit_resample(X_train_scaled, y_train)
 
 # 5. Train model
-rf_model = RandomForestClassifier(
-    n_estimators=335,
-    max_depth=10,
-    class_weight="balanced",
+rf_model = XGBClassifier(
+    n_estimators=190,
+    max_depth=1,
+    scale_pos_weight=len(y_train_smote[y_train_smote == 0]) / len(y_train_smote[y_train_smote == 1]),
+    use_label_encoder=False,
+    eval_metric='logloss',
     random_state=42
 )
 rf_model.fit(X_train_smote, y_train_smote)
