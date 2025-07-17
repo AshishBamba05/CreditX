@@ -117,7 +117,7 @@ The same procedure was applied for values the user inserted.
 
 ## 📊 Model Performance
 
-- ✅ **Accuracy**: 0.656
+- ✅ **Accuracy**: 0.657
 - ✅ **Precision**: 0.210
 - ✅ **Recall**: 0.710
 - ✅ **F1 Score**: 0.324
