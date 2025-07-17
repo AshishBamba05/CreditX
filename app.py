@@ -3,6 +3,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from imblearn.over_sampling import SMOTE
+from imblearn.combine import SMOTEENN
 from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 import sqlite3
@@ -81,6 +82,9 @@ preprocessor = ColumnTransformer(
 
 X_train_scaled = preprocessor.fit_transform(X_train)
 X_test_scaled = preprocessor.transform(X_test)
+
+smote_enn = SMOTEENN(random_state=42)
+X_train_scaled, y_train = smote_enn.fit_resample(X_train_scaled, y_train)
 
 # 5. Train model
 xgb_model = XGBClassifier(
