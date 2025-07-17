@@ -12,12 +12,6 @@ SELECT
     ELSE 'High Debt'
   END AS debt_bracket,
 
-  CASE
-    WHEN {expenditure} < 10000 THEN 'Low Expenditure'
-    WHEN {expenditure} BETWEEN 10000 AND 20000 THEN 'Mid Expenditure'
-    ELSE 'High Expenditure'
-  END AS expenditure_bracket;
-
 
 -- [latest_score_with_label]
 SELECT 

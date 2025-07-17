@@ -7,13 +7,11 @@ DB_PATH = "creditx_predictions.db"
 def get_connection():
     return sqlite3.connect(DB_PATH)
 
+
 def insert_prediction(income, debt,
-                      r_debt_income,
-                      t_gambling_12,
-                      savings_amount,
-                      r_expenditure,
-                      r_education,
-                      cat_credit_card,
+                      dti_ratio,
+                      loan_amount, interest_rate,
+                      loan_term, credit_score,
                       score):
 
     conn = get_connection()
@@ -22,22 +20,20 @@ def insert_prediction(income, debt,
     cursor.execute("""
         INSERT INTO predictions (
             income, debt,
-            r_debt_income,
-            t_gambling_12,
-            savings_amount,
-            r_expenditure,
-            r_education,
-            cat_credit_card,
+            dti_ratio,
+            loan_amount,
+            interest_rate,
+            loan_term,
+            credit_score,
             score
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         income, debt,
-        r_debt_income,
-        t_gambling_12,
-        savings_amount,
-        r_expenditure,
-        r_education,
-        cat_credit_card,
+        dti_ratio,
+        loan_amount,
+        interest_rate,
+        loan_term,
+        credit_score,
         score
     ))
 
@@ -72,19 +68,17 @@ def fetch_predictions():
         timestamp,
         income,
         debt,
-        r_debt_income,
-        t_gambling_12,
-        savings_amount,
-        r_expenditure,
-        r_education,
-        cat_credit_card,
+        dti_ratio,
+        loan_amount,
+        interest_rate,
+        loan_term,
+        credit_score,
         score,
         CASE
             WHEN score = 1 THEN '🔴 Default'
             WHEN score = 0 THEN '🟢 No Default'
             ELSE '⚪ Unknown'
-    END AS score_category
-
+        END AS score_category
     FROM predictions
     ORDER BY timestamp DESC
     """

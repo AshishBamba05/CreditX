@@ -25,48 +25,56 @@ conn = get_connection()
 cursor = conn.cursor()
 
 # --- Load & Prepare Dataset ---
-df = pd.read_csv("credit_score.csv")
-df = df.fillna(df.median(numeric_only=True)).round(0)
+@st.cache_data
+def load_data():
+    df = pd.read_csv("Loan_default.csv")
+    return df.fillna(df.median(numeric_only=True)).round(0)
 
-df["R_EXPENDITURE"] = df["T_EXPENDITURE_6"] / (df["T_EXPENDITURE_12"] + .1)
-df["R_EDUCATION"] = df["T_EDUCATION_6"] / (df["T_EDUCATION_12"] + .1)
+df = load_data()
+
+
+@st.cache_data
+def preprocess_data(df):
+    df["R_LOAN_INCOME"] = df["LoanAmount"] / (df["Income"] + 1)
+    df["R_INTEREST_BURDEN"] = df["InterestRate"] * df["LoanTerm"]
+    df["R_CREDIT_UTIL"] = df["LoanAmount"] / (df["CreditScore"] + 1)
+    df["FLAG_HIGH_DTI"] = (df["DTIRatio"] > 0.4).astype(int)
+    df["CREDIT_BIN"] = pd.cut(df["CreditScore"], bins=[300, 579, 669, 739, 799, 850],
+                          labels=["Poor", "Fair", "Good", "Very Good", "Excellent"])
+    return df
+
+df = preprocess_data(df)
 
 FEATURES = [
-    'R_DEBT_INCOME', 
-    'T_GAMBLING_12',
-    'SAVINGS',
-    'CAT_CREDIT_CARD',      
-    'R_EXPENDITURE',
-    'R_EDUCATION',
+    'R_LOAN_INCOME', 
+    'R_INTEREST_BURDEN',
+    'R_CREDIT_UTIL',
+    'FLAG_HIGH_DTI',      
+    'CREDIT_BIN',
 ]
 
 # 1. Start with original, unbalanced data
 X = df[FEATURES]
-y = df["DEFAULT"]
+y = df["Default"]
 
 # 2. Split before balancing
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-# 3. Oversample only training set (manual like before)
-#train_df = pd.concat([X_train, y_train], axis=1)
-#df_high = train_df[train_df["DEFAULT"] == 1]
-
-#train_df_balanced = pd.concat([
- #   train_df,
-  #  df_high.sample(n=373, replace=True, random_state=42)
-#])
-
-#X_train_balanced = train_df_balanced[FEATURES]
-#y_train_balanced = train_df_balanced["DEFAULT"]
-
 # 4. Preprocess as before
-X_train_cont = X_train.drop(columns=["CAT_CREDIT_CARD"])
-X_train_cat = X_train[["CAT_CREDIT_CARD"]].values
+X_train_cont = X_train.drop(columns=["CREDIT_BIN", "FLAG_HIGH_DTI"])
+X_train_cat = pd.DataFrame({
+    "CREDIT_BIN": X_train["CREDIT_BIN"].cat.codes,
+    "FLAG_HIGH_DTI": X_train["FLAG_HIGH_DTI"]
+}).values
 
-X_test_cont = X_test.drop(columns=["CAT_CREDIT_CARD"])
-X_test_cat = X_test[["CAT_CREDIT_CARD"]].values
+X_test_cont = X_test.drop(columns=["CREDIT_BIN", "FLAG_HIGH_DTI"])
+X_test_cat = pd.DataFrame({
+    "CREDIT_BIN": X_test["CREDIT_BIN"].cat.codes,
+    "FLAG_HIGH_DTI": X_test["FLAG_HIGH_DTI"]
+}).values
+
 
 scaler = StandardScaler()
 X_train_scaled_cont = scaler.fit_transform(X_train_cont)
@@ -75,24 +83,16 @@ X_test_scaled_cont = scaler.transform(X_test_cont)
 X_train_final = np.hstack([X_train_scaled_cont, X_train_cat])
 X_test_final = np.hstack([X_test_scaled_cont, X_test_cat])
 
-smote = SMOTE(sampling_strategy=0.95, random_state=42, k_neighbors=5, n_jobs = 7)
+smote = SMOTE(sampling_strategy=0.85, random_state=42, k_neighbors=5, n_jobs = 7)
 X_train_smote, y_train_smote = smote.fit_resample(X_train_final, y_train)
-
-print("Train set after SMOTE:")
-print(pd.Series(y_train_smote).value_counts(normalize=True))
-
 
 # 5. Train model
 rf_model = RandomForestClassifier(
-    n_estimators=358,
+    n_estimators=335,
     max_depth=10,
     random_state=42
 )
 rf_model.fit(X_train_smote, y_train_smote)
-
-
-#rf_model = RandomForestClassifier(n_estimators=95, max_depth=12, class_weight='balanced', random_state=42)
-#rf_model.fit(X_train_final, y_train)
 
 # --- Feature Importance ---
 importances = rf_model.feature_importances_
@@ -126,38 +126,39 @@ st.markdown("💥 Provides ML-driven insights.")
 
 st.caption("By Ashish V Bamba | [GitHub](https://github.com/AshishBamba05/FinRisk.AI) | [LinkedIn](https://www.linkedin.com/in/ashishbamba/)")
 
-income = st.number_input("Annual Income", min_value=0.0)
-debt = st.number_input("Total Debt", min_value=0.0)
-expenditure_12 = st.number_input("12-Month Expenditure", min_value=0.0)
-expenditure_6 = st.number_input("6-Month Expenditure", min_value=0.0)
-gambling = st.number_input("Annual Gambling Spend", min_value=0.0)
-savings = st.number_input("Savings Account Balance ($)", min_value=0.0)
-education_12 = st.number_input("12-Month Education Spend", min_value=0.0)
-education_6 = st.number_input("6-Month Education Spend", min_value=0.0)
-has_credit_card = st.checkbox("Do you have a credit card?")
+st.subheader("Enter Applicant Financial Details")
+
+income = st.number_input("Annual Income ($)", min_value=0.0)
+debt = st.number_input("Total Debt ($)", min_value=0.0)
+loan_amount = st.number_input("Loan Amount ($)", min_value=0.0)
+interest_rate = st.number_input("Interest Rate (%)", min_value=0.0)
+loan_term = st.number_input("Loan Term (in months)", min_value=1)
+credit_score = st.number_input("Credit Score (300–850)", min_value=300, max_value=850)
 
 
 if st.button("Predict Default Status"):
-    r_debt_income = np.log1p(debt / (income + 1))
-    t_expenditure_12 = expenditure_12
-    t_expenditure_6 = expenditure_6
-    t_gambling_12 = gambling
-    savings_amount = savings
-    r_expenditure = t_expenditure_6 / (t_expenditure_12 + 1)
-    r_expenditure = np.clip(r_expenditure, 0, 1)
-    r_education = education_6 / (education_12 + 1)
-    r_education = np.clip(r_education, 0, 1)
-    cat_credit_card = 1 if has_credit_card else 0
+    r_loan_income = loan_amount / (income + 1)
+    r_interest_burden = interest_rate * loan_term
+    r_credit_util = loan_amount / (credit_score + 1)
+    dti_ratio = debt / (income + 1)
+    flag_high_dti = int(dti_ratio > 0.4)
+    credit_bin_label = pd.cut(
+    pd.Series([credit_score]),
+    bins=[300, 579, 669, 739, 799, 850],
+    labels=["Poor", "Fair", "Good", "Very Good", "Excellent"]
+)
+
+    credit_bin_encoded = credit_bin_label.cat.codes[0]
+
 
     user_input_cont = [[  
-    r_debt_income, 
-    t_gambling_12,
-    savings,
-    r_expenditure, 
-    r_education,
+    r_loan_income, 
+    r_interest_burden,
+    r_credit_util,
+    dti_ratio,
 ]]
 
-    user_input_cat = [[cat_credit_card]]
+    user_input_cat = [[flag_high_dti, credit_bin_encoded]]
     user_input_scaled_cont = scaler.transform(user_input_cont)
     user_input_final = np.hstack([user_input_scaled_cont, user_input_cat])
 
@@ -171,22 +172,17 @@ if st.button("Predict Default Status"):
 
     insert_prediction(
         income, debt, 
-        r_debt_income, 
-        t_gambling_12,
-        savings_amount, 
-        r_expenditure, 
-        r_education,
-        cat_credit_card,
+        dti_ratio, 
+        loan_amount, interest_rate,  
+        loan_term, credit_score,
         prediction
     )
 
     zero_fields = 0
 
     fields_to_check = [
-        income, debt, expenditure_12, expenditure_6,  
-        gambling, savings_amount, has_credit_card,
-        education_12,
-        education_6,
+        income, debt, loan_amount, interest_rate,  
+        loan_term, credit_score
     ]
 
     for val in fields_to_check:
@@ -236,15 +232,16 @@ if st.button("Predict Default Status"):
 
     sql = run_sql_query_from_file("ex_queries.sql", "classify_user",
                                   income=income,
-                                  debt=debt,
-                                  expenditure=expenditure_12)
+                                  debt=debt
+                                 # expenditure=expenditure_12
+                                  )
 
     if sql:
         bracket_df = pd.read_sql_query(sql, conn)
         st.subheader("Your Bracket Classification")
         st.write("Income Bracket:", bracket_df["income_bracket"][0])
         st.write("Debt Bracket:", bracket_df["debt_bracket"][0])
-        st.write("Expenditure Bracket:", bracket_df["expenditure_bracket"][0])
+        #st.write("Expenditure Bracket:", bracket_df["expenditure_bracket"][0])
     else:
         st.error("⚠️ Couldn't find classification query in ex_queries.sql.")
 
@@ -295,7 +292,6 @@ if not prediction_df.empty:
 else:
     st.info("No predictions yet.")
 
-
 # --- Drop & Recreate Table ---
 if st.button("Drop & Recreate Prediction Table"):
     conn = sqlite3.connect("creditx_predictions.db")
@@ -308,14 +304,11 @@ if st.button("Drop & Recreate Prediction Table"):
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             income FLOAT,
             debt FLOAT,
-            r_debt_income FLOAT,
-            t_gambling_12 FLOAT,
-            savings_amount FLOAT,
-            r_expenditure FLOAT,
-            r_education FLOAT,
-            education_12 FLOAT,
-            education_6 FLOAT,
-            cat_credit_card INTEGER,
+            dti_ratio FLOAT,
+            loan_amount FLOAT,
+            interest_rate FLOAT,
+            loan_term FLOAT,
+            credit_score FLOAT,
             score INTEGER
         )
     """)
@@ -325,13 +318,6 @@ if st.button("Drop & Recreate Prediction Table"):
 
     st.success("✅ Table has been dropped and recreated.")
     st.dataframe(pd.DataFrame(columns=[
-        "id", "timestamp", "income", "debt",
-        "r_debt_income", 
-        "t_gambling_12", "savings_amount",
-        "r_expenditure", 
-        "education_12",
-        "education_6",
-        "r_education",
-        "cat_credit_card",
-        "score"
+        "id", "timestamp", "income", "debt", "dti_ratio",
+        "loan_amount", "interest_rate", "loan_term", "credit_score", "score"
     ]))
