@@ -47,7 +47,6 @@ def preprocess_data(df):
     df["HasCoSigner"] = df["HasCoSigner"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
     df["HasMortgage"] = df["HasMortgage"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
     df["Education"] = df["Education"].map({"Bachelor's": 0, "High School": 1, "Other": 2}).fillna(0).astype(int)
-    df["LoanPurpose"] = df["LoanPurpose"].map({"Business": 0, "Home": 1, "Other": 2}).fillna(0).astype(int)
     df["R_SCORE_PER_LINE"] = df["CreditScore"] / (df["NumCreditLines"] + 1)
 
     return df
@@ -61,7 +60,8 @@ continuous_features = [
     'R_INTEREST_BURDEN',
     'R_CREDIT_UTIL',
     'MonthsEmployed',
-    'R_SCORE_PER_LINE'
+    'R_SCORE_PER_LINE',
+    'LoanAmount'
 ]
 
 categorical_features = ['HasCoSigner', 'HasMortgage', 'Education']
