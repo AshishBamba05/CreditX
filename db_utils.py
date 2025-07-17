@@ -11,6 +11,8 @@ def get_connection():
 def insert_prediction(income, age, months_employed,
                       loan_amount, interest_rate,
                       loan_term, credit_score,
+                      education, 
+                      loan_purpose,
                       has_coSigner, has_mortgage,
                       score):
 
@@ -26,10 +28,12 @@ def insert_prediction(income, age, months_employed,
             interest_rate,
             loan_term,
             credit_score,
+            education,
+            loan_purpose,
             has_coSigner,
             has_mortgage,
             score
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         income,
         age,
@@ -37,6 +41,8 @@ def insert_prediction(income, age, months_employed,
         loan_amount,
         interest_rate,
         loan_term,
+        education,
+        loan_purpose,
         credit_score,
         has_coSigner,
         has_mortgage,
@@ -79,6 +85,8 @@ def fetch_predictions():
         interest_rate,
         loan_term,
         credit_score,
+        education,
+        loan_purpose,
         has_coSigner,
         has_mortgage,
         score,

@@ -21,6 +21,8 @@ cursor.execute("""
         r_credit_util FLOAT,
         has_coSigner INTEGER,
         has_mortgage INTEGER,
+        loan_purpose INTEGER,
+        education INTEGER,
         score INTEGER
     )
 """)

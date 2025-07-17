@@ -42,8 +42,10 @@ def preprocess_data(df):
     df["R_MONTHS_EMPLOYED"] = df["MonthsEmployed"] / (df["Age"] + 1)
     df["HasCoSigner"] = df["HasCoSigner"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
     df["HasMortgage"] = df["HasMortgage"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
+    df["Education"] = df["Education"].map({"Bachelor's": 0, "High School": 1, "Other": 2}).fillna(0).astype(int)
+    df["LoanPurpose"] = df["LoanPurpose"].map({"Business": 0, "Home": 1, "Other": 2}).fillna(0).astype(int)
+    df["Education_LoanPurpose"] = df["Education"].astype(str) + "_" + df["LoanPurpose"].astype(str)
     return df
-
 df = preprocess_data(df)
 
 print(df["Default"].describe())
@@ -55,7 +57,7 @@ continuous_features = [
     'R_MONTHS_EMPLOYED',
 ]
 
-categorical_features = ['HasCoSigner', 'HasMortgage']
+categorical_features = ['HasCoSigner', 'HasMortgage', 'Education_LoanPurpose']
 feature_names = continuous_features + categorical_features
 
 # 1. Start with original, unbalanced data
@@ -134,6 +136,14 @@ loan_term = st.number_input("Loan Term (in months)", min_value=1)
 credit_score = st.number_input("Credit Score", min_value=0)
 has_coSigner = st.checkbox("Do you have a co-signer?", help="Select if another person is legally responsible for this loan with you.")
 has_mortgage = st.checkbox("Do you have a mortgage?", help="Select if you have a mortgage on this loan.")
+education = st.selectbox(
+    "Highest Education Level",
+    ["Bachelor's", "High School", "Other"]
+)
+loan_purpose = st.selectbox(
+    "Loan Purpose",
+    ["Business", "Home", "Other"]
+)
 
 
 if st.button("Predict Default Status"):
@@ -143,6 +153,12 @@ if st.button("Predict Default Status"):
     r_months_employed = months_employed / (age + 1)
     has_coSigner = 1 if has_coSigner else 0
     has_mortgage = 1 if has_mortgage else 0
+    education_map = {
+        "Bachelor's": 0,
+        "High School": 1,
+        "Other": 2
+    }
+    education = education_map.get(education, 2)
 
     user_input = [[  
     r_loan_income, 
@@ -150,7 +166,9 @@ if st.button("Predict Default Status"):
     r_credit_util,
     r_months_employed,
     has_coSigner,
-    has_mortgage
+    has_mortgage,
+    loan_purpose,
+    education
 ]]
 
     user_input_scaled = scaler.transform(user_input)
@@ -170,6 +188,8 @@ if st.button("Predict Default Status"):
         credit_score,
         has_coSigner,
         has_mortgage,
+        loan_purpose,
+        education,
         prediction
     )
 
@@ -177,7 +197,8 @@ if st.button("Predict Default Status"):
 
     fields_to_check = [
         income, age, months_employed, loan_amount, interest_rate,  
-        has_coSigner, has_mortgage, loan_term, credit_score
+        has_coSigner, has_mortgage, loan_term, credit_score, education,
+        loan_purpose
     ]
 
     for val in fields_to_check:
@@ -306,6 +327,8 @@ if st.button("Drop & Recreate Prediction Table"):
             credit_score INT,
             has_coSigner INT,
             has_mortgage INT,
+            education INT,
+            loan_purpose INT,
             score INTEGER
         )
     """)
@@ -318,5 +341,6 @@ if st.button("Drop & Recreate Prediction Table"):
         "id", "timestamp", "income", "loan_amount",
         "age", "months_employed", 
         "interest_rate", "loan_term", "credit_score", "has_coSigner",
+        "education", "loan_purpose",
          "has_mortgage", "score"
     ]))
