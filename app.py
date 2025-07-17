@@ -86,7 +86,7 @@ X_train_smote, y_train_smote = smote.fit_resample(X_train_scaled, y_train)
 
 # 5. Train model
 rf_model = XGBClassifier(
-    n_estimators=190,
+    n_estimators=200,
     max_depth=1,
     scale_pos_weight=len(y_train_smote[y_train_smote == 0]) / len(y_train_smote[y_train_smote == 1]),
     use_label_encoder=False,
