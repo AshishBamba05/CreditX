@@ -1,15 +1,15 @@
 import streamlit as st
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
+from sklearn.preprocessing import StandardScaler
 from imblearn.over_sampling import SMOTE
-from sklearn.metrics import classification_report
 from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 import sqlite3
 import plotly.graph_objects as go
 import numpy as np
 from collections import Counter
+from sklearn.compose import ColumnTransformer
 
 
 from db_utils import (
@@ -39,11 +39,12 @@ def preprocess_data(df):
     df["R_INTEREST_BURDEN"] = df["InterestRate"] * df["LoanTerm"]
     df["R_CREDIT_UTIL"] = df["LoanAmount"] / (df["CreditScore"] + 1)
     df["R_MONTHS_EMPLOYED"] = df["MonthsEmployed"] / (df["Age"] + 1)
+    df["HasCoSigner"] = df["HasCoSigner"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
     return df
 
 df = preprocess_data(df)
 
-FEATURES = [
+continuous_features = [
     'R_LOAN_INCOME', 
     'R_INTEREST_BURDEN',
     'R_CREDIT_UTIL',
@@ -51,8 +52,11 @@ FEATURES = [
     'DTIRatio'
 ]
 
+categorical_features = ['HasCoSigner']
+feature_names = continuous_features + categorical_features
+
 # 1. Start with original, unbalanced data
-X = df[FEATURES]
+X = df[continuous_features + categorical_features]
 y = df["Default"]
 
 # 2. Split before balancing
@@ -62,8 +66,16 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 # 4. Preprocess as before
 scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('cont', scaler, continuous_features),
+        ('cat', 'passthrough', categorical_features)
+    ]
+)
+
+X_train_scaled = preprocessor.fit_transform(X_train)
+X_test_scaled = preprocessor.transform(X_test)
 
 smote = SMOTE(sampling_strategy=0.8, random_state=42, k_neighbors=5, n_jobs = 7)
 X_train_smote, y_train_smote = smote.fit_resample(X_train_scaled, y_train)
@@ -79,7 +91,6 @@ rf_model.fit(X_train_smote, y_train_smote)
 
 # --- Feature Importance ---
 importances = rf_model.feature_importances_
-feature_names = FEATURES
 importance_df = pd.DataFrame({
     'Feature': feature_names,
     'Importance': importances
@@ -119,6 +130,7 @@ loan_amount = st.number_input("Loan Amount ($)", min_value=0.0)
 interest_rate = st.number_input("Interest Rate (%)", min_value=0.0)
 loan_term = st.number_input("Loan Term (in months)", min_value=1)
 credit_score = st.number_input("Credit Score", min_value=0)
+has_coSigner = st.checkbox("Do you have a co-signer?", help="Select if another person is legally responsible for this loan with you.")
 
 
 if st.button("Predict Default Status"):
@@ -127,13 +139,15 @@ if st.button("Predict Default Status"):
     r_credit_util = loan_amount / (credit_score + 1)
     r_months_employed = months_employed / (age + 1)
     dti_ratio = debt / (income + 1)
+    has_coSigner = 1 if has_coSigner else 0
 
     user_input = [[  
     r_loan_income, 
     r_interest_burden,
     r_credit_util,
     r_months_employed,
-    dti_ratio
+    dti_ratio,
+    has_coSigner
 ]]
 
     user_input_scaled = scaler.transform(user_input)
@@ -151,7 +165,8 @@ if st.button("Predict Default Status"):
         age,
         months_employed,
         credit_score,
-        debt,
+        dti_ratio,
+        has_coSigner,
         prediction
     )
 
@@ -159,7 +174,7 @@ if st.button("Predict Default Status"):
 
     fields_to_check = [
         income, age, debt, months_employed, loan_amount, interest_rate,  
-        loan_term, credit_score
+        has_coSigner, loan_term, credit_score
     ]
 
     for val in fields_to_check:
@@ -280,13 +295,14 @@ if st.button("Drop & Recreate Prediction Table"):
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             income FLOAT,
-            debt FLOAT,
+            dti_ratio FLOAT,
             age INT,
             months_employed INT,
             loan_amount FLOAT,
             interest_rate FLOAT,
             loan_term FLOAT,
             credit_score INT,
+            has_coSigner INT,
             score INTEGER
         )
     """)
@@ -297,6 +313,6 @@ if st.button("Drop & Recreate Prediction Table"):
     st.success("✅ Table has been dropped and recreated.")
     st.dataframe(pd.DataFrame(columns=[
         "id", "timestamp", "income", "loan_amount",
-        "age", "months_employed", "debt",
+        "age", "months_employed", "dti_ratio",
         "interest_rate", "loan_term", "credit_score", "score"
     ]))

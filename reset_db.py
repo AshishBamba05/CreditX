@@ -12,7 +12,7 @@ cursor.execute("""
         loan_amount FLOAT,
         income FLOAT,
         age INTEGER,
-        debt FLOAT,
+        dti_ratio FLOAT,
         months_employed INTEGER,
         interest_rate FLOAT,
         loan_term INTEGER,
