@@ -16,7 +16,6 @@ cursor.execute("""
         interest_rate FLOAT,
         loan_term INTEGER,
         credit_score INTEGER,
-        r_loan_income FLOAT,
         r_interest_burden FLOAT,
         r_credit_util FLOAT,
         has_coSigner INTEGER,

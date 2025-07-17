@@ -41,7 +41,7 @@ df = load_data()
 
 @st.cache_data
 def preprocess_data(df):
-    df["R_LOAN_INCOME"] = df["LoanAmount"] / (df["Income"] + 1)
+    #df["R_LOAN_INCOME"] = df["LoanAmount"] / (df["Income"] + 1)
     df["R_INTEREST_BURDEN"] = df["InterestRate"] * df["LoanTerm"]
     df["R_CREDIT_UTIL"] = df["LoanAmount"] / (df["CreditScore"] + 1)
     df["R_MONTHS_EMPLOYED"] = df["MonthsEmployed"] / (df["Age"] + 1)
@@ -58,7 +58,7 @@ df = preprocess_data(df)
 print(df["Default"].describe())
 
 continuous_features = [
-    'R_LOAN_INCOME', 
+    'Income',
     'R_INTEREST_BURDEN',
     'R_CREDIT_UTIL',
     'R_MONTHS_EMPLOYED',
