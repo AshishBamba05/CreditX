@@ -48,8 +48,8 @@ def preprocess_data(df):
     df["HasMortgage"] = df["HasMortgage"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
     df["Education"] = df["Education"].map({"Bachelor's": 0, "High School": 1, "Other": 2}).fillna(0).astype(int)
     df["R_SCORE_PER_LINE"] = df["CreditScore"] / (df["NumCreditLines"] + 1)
-
     return df
+
 df = preprocess_data(df)
 
 print(df["Default"].describe())
@@ -57,14 +57,14 @@ print(df["Default"].describe())
 continuous_features = [
     'Income',
     'Age',
-    'R_INTEREST_BURDEN',
+    'InterestRate',
     'R_CREDIT_UTIL',
     'MonthsEmployed',
     'R_SCORE_PER_LINE',
     'LoanAmount'
 ]
 
-categorical_features = ['HasCoSigner', 'HasMortgage', 'Education']
+categorical_features = ['Education']
 feature_names = continuous_features + categorical_features
 
 # 1. Start with original, unbalanced data
