@@ -11,9 +11,6 @@ import numpy as np
 from collections import Counter
 from sklearn.compose import ColumnTransformer
 from xgboost import XGBClassifier
-from lightgbm import LGBMClassifier
-from catboost import CatBoostClassifier
-
 
 
 from db_utils import (
@@ -48,6 +45,8 @@ def preprocess_data(df):
 
 df = preprocess_data(df)
 
+print(df["Default"].describe())
+
 continuous_features = [
     'R_LOAN_INCOME', 
     'R_INTEREST_BURDEN',
@@ -81,22 +80,23 @@ preprocessor = ColumnTransformer(
 X_train_scaled = preprocessor.fit_transform(X_train)
 X_test_scaled = preprocessor.transform(X_test)
 
-smote = SMOTE(sampling_strategy=0.75, random_state=42, k_neighbors=5, n_jobs = 7)
-X_train_smote, y_train_smote = smote.fit_resample(X_train_scaled, y_train)
+#smote = SMOTE(sampling_strategy=0.75, random_state=42, k_neighbors=5, n_jobs = 9)
+#X_train_smote, y_train_smote = smote.fit_resample(X_train_scaled, y_train)
 
 # 5. Train model
-rf_model = XGBClassifier(
+xgb_model = XGBClassifier(
     n_estimators=200,
     max_depth=1,
-    scale_pos_weight=len(y_train_smote[y_train_smote == 0]) / len(y_train_smote[y_train_smote == 1]),
+    scale_pos_weight=len(y_train[y_train == 0]) / len(y_train[y_train == 1]),
     use_label_encoder=False,
     eval_metric='logloss',
     random_state=42
 )
-rf_model.fit(X_train_smote, y_train_smote)
+
+xgb_model.fit(X_train_scaled, y_train)
 
 # --- Feature Importance ---
-importances = rf_model.feature_importances_
+importances = xgb_model.feature_importances_
 importance_df = pd.DataFrame({
     'Feature': feature_names,
     'Importance': importances
@@ -104,8 +104,8 @@ importance_df = pd.DataFrame({
 
 
 # --- Model Evaluation ---
-y_train_pred = rf_model.predict(X_train_smote)
-y_test_pred = rf_model.predict(X_test_scaled)
+y_train_pred = xgb_model.predict(X_train_scaled)
+y_test_pred = xgb_model.predict(X_test_scaled)
 
 accuracy = accuracy_score(y_test, y_test_pred)
 precision = precision_score(y_test, y_test_pred)
