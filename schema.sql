@@ -8,13 +8,15 @@ CREATE TABLE predictions (
   interest_rate FLOAT,
   loan_term INTEGER,
   credit_score INTEGER,
-  dti_ratio FLOAT,
 
   r_loan_income FLOAT,
   r_interest_burden FLOAT,
   r_credit_util FLOAT,
-  flag_high_dti INTEGER,
-  credit_bin TEXT,
+
+  age INTEGER,
+  months_employed INTEGER,
+  has_coSigner INTEGER,
+  has_mortgage INTEGER,
 
   score INTEGER
 );

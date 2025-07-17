@@ -41,6 +41,7 @@ def preprocess_data(df):
     df["R_CREDIT_UTIL"] = df["LoanAmount"] / (df["CreditScore"] + 1)
     df["R_MONTHS_EMPLOYED"] = df["MonthsEmployed"] / (df["Age"] + 1)
     df["HasCoSigner"] = df["HasCoSigner"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
+    df["HasMortgage"] = df["HasMortgage"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
     return df
 
 df = preprocess_data(df)
@@ -52,10 +53,9 @@ continuous_features = [
     'R_INTEREST_BURDEN',
     'R_CREDIT_UTIL',
     'R_MONTHS_EMPLOYED',
-    'DTIRatio'
 ]
 
-categorical_features = ['HasCoSigner']
+categorical_features = ['HasCoSigner', 'HasMortgage']
 feature_names = continuous_features + categorical_features
 
 # 1. Start with original, unbalanced data
@@ -79,9 +79,6 @@ preprocessor = ColumnTransformer(
 
 X_train_scaled = preprocessor.fit_transform(X_train)
 X_test_scaled = preprocessor.transform(X_test)
-
-#smote = SMOTE(sampling_strategy=0.75, random_state=42, k_neighbors=5, n_jobs = 9)
-#X_train_smote, y_train_smote = smote.fit_resample(X_train_scaled, y_train)
 
 # 5. Train model
 xgb_model = XGBClassifier(
@@ -129,7 +126,6 @@ st.caption("By Ashish V Bamba | [GitHub](https://github.com/AshishBamba05/FinRis
 st.subheader("Enter Applicant Financial Details")
 
 age = st.number_input("Age", min_value=0)
-debt = st.number_input("Debt", min_value=0)
 months_employed = st.number_input("Months Employed", min_value=0)
 income = st.number_input("Annual Income ($)", min_value=0.0)
 loan_amount = st.number_input("Loan Amount ($)", min_value=0.0)
@@ -137,6 +133,7 @@ interest_rate = st.number_input("Interest Rate (%)", min_value=0.0)
 loan_term = st.number_input("Loan Term (in months)", min_value=1)
 credit_score = st.number_input("Credit Score", min_value=0)
 has_coSigner = st.checkbox("Do you have a co-signer?", help="Select if another person is legally responsible for this loan with you.")
+has_mortgage = st.checkbox("Do you have a mortgage?", help="Select if you have a mortgage on this loan.")
 
 
 if st.button("Predict Default Status"):
@@ -144,16 +141,16 @@ if st.button("Predict Default Status"):
     r_interest_burden = interest_rate * loan_term
     r_credit_util = loan_amount / (credit_score + 1)
     r_months_employed = months_employed / (age + 1)
-    dti_ratio = debt / (income + 1)
     has_coSigner = 1 if has_coSigner else 0
+    has_mortgage = 1 if has_mortgage else 0
 
     user_input = [[  
     r_loan_income, 
     r_interest_burden,
     r_credit_util,
     r_months_employed,
-    dti_ratio,
-    has_coSigner
+    has_coSigner,
+    has_mortgage
 ]]
 
     user_input_scaled = scaler.transform(user_input)
@@ -171,16 +168,16 @@ if st.button("Predict Default Status"):
         age,
         months_employed,
         credit_score,
-        dti_ratio,
         has_coSigner,
+        has_mortgage,
         prediction
     )
 
     zero_fields = 0
 
     fields_to_check = [
-        income, age, debt, months_employed, loan_amount, interest_rate,  
-        has_coSigner, loan_term, credit_score
+        income, age, months_employed, loan_amount, interest_rate,  
+        has_coSigner, has_mortgage, loan_term, credit_score
     ]
 
     for val in fields_to_check:
@@ -238,7 +235,7 @@ if st.button("Predict Default Status"):
         bracket_df = pd.read_sql_query(sql, conn)
         st.subheader("Your Bracket Classification")
         st.write("Income Bracket:", bracket_df["income_bracket"][0])
-        st.write("Debt Bracket:", bracket_df["debt_bracket"][0])
+       # st.write("Debt Bracket:", bracket_df["debt_bracket"][0])
         #st.write("Expenditure Bracket:", bracket_df["expenditure_bracket"][0])
     else:
         st.error("⚠️ Couldn't find classification query in ex_queries.sql.")
@@ -301,7 +298,6 @@ if st.button("Drop & Recreate Prediction Table"):
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             income FLOAT,
-            dti_ratio FLOAT,
             age INT,
             months_employed INT,
             loan_amount FLOAT,
@@ -309,6 +305,7 @@ if st.button("Drop & Recreate Prediction Table"):
             loan_term FLOAT,
             credit_score INT,
             has_coSigner INT,
+            has_mortgage INT,
             score INTEGER
         )
     """)
@@ -319,6 +316,7 @@ if st.button("Drop & Recreate Prediction Table"):
     st.success("✅ Table has been dropped and recreated.")
     st.dataframe(pd.DataFrame(columns=[
         "id", "timestamp", "income", "loan_amount",
-        "age", "months_employed", "dti_ratio",
-        "interest_rate", "loan_term", "credit_score", "score"
+        "age", "months_employed", 
+        "interest_rate", "loan_term", "credit_score", "has_coSigner",
+         "has_mortgage", "score"
     ]))

@@ -8,10 +8,10 @@ def get_connection():
     return sqlite3.connect(DB_PATH)
 
 
-def insert_prediction(income, age, dti_ratio, months_employed,
+def insert_prediction(income, age, months_employed,
                       loan_amount, interest_rate,
                       loan_term, credit_score,
-                      has_coSigner,
+                      has_coSigner, has_mortgage,
                       score):
 
     conn = get_connection()
@@ -21,25 +21,25 @@ def insert_prediction(income, age, dti_ratio, months_employed,
         INSERT INTO predictions (
             income,
             age,
-            dti_ratio,
             months_employed,
             loan_amount,
             interest_rate,
             loan_term,
             credit_score,
             has_coSigner,
+            has_mortgage,
             score
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         income,
         age,
-        dti_ratio,
         months_employed,
         loan_amount,
         interest_rate,
         loan_term,
         credit_score,
         has_coSigner,
+        has_mortgage,
         score
     ))
 
@@ -72,14 +72,15 @@ def fetch_predictions():
     SELECT 
         id,
         timestamp,
-        income,
-        dti_ratio,  
+        income,  
         age,
         months_employed,
         loan_amount,
         interest_rate,
         loan_term,
         credit_score,
+        has_coSigner,
+        has_mortgage,
         score,
         CASE
             WHEN score = 1 THEN '🔴 Default'

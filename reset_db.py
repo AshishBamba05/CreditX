@@ -12,7 +12,6 @@ cursor.execute("""
         loan_amount FLOAT,
         income FLOAT,
         age INTEGER,
-        dti_ratio FLOAT,
         months_employed INTEGER,
         interest_rate FLOAT,
         loan_term INTEGER,
@@ -20,8 +19,8 @@ cursor.execute("""
         r_loan_income FLOAT,
         r_interest_burden FLOAT,
         r_credit_util FLOAT,
-        flag_high_dti INTEGER,
-        credit_bin TEXT,
+        has_coSigner INTEGER,
+        has_mortgage INTEGER,
         score INTEGER
     )
 """)
