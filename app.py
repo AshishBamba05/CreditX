@@ -2,11 +2,14 @@ import streamlit as st
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
+from imblearn.over_sampling import SMOTE
+from sklearn.metrics import classification_report
 from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 import sqlite3
 import plotly.graph_objects as go
 import numpy as np
+from collections import Counter
 
 
 from db_utils import (
@@ -23,10 +26,10 @@ cursor = conn.cursor()
 
 # --- Load & Prepare Dataset ---
 df = pd.read_csv("credit_score.csv")
-df = df.fillna(df.mean(numeric_only=True)).round(0)
+df = df.fillna(df.median(numeric_only=True)).round(0)
 
-df["R_EXPENDITURE"] = df["T_EXPENDITURE_6"] / (df["T_EXPENDITURE_12"] + 1)
-df["R_EDUCATION"] = df["T_EDUCATION_6"] / (df["T_EDUCATION_12"] + 1)
+df["R_EXPENDITURE"] = df["T_EXPENDITURE_6"] / (df["T_EXPENDITURE_12"] + .1)
+df["R_EDUCATION"] = df["T_EDUCATION_6"] / (df["T_EDUCATION_12"] + .1)
 
 FEATURES = [
     'R_DEBT_INCOME', 
@@ -37,37 +40,59 @@ FEATURES = [
     'R_EDUCATION',
 ]
 
-df_high = df[df["DEFAULT"] == 1]
-df_balanced = pd.concat([
-   df,
-   df_high.sample(n=373, replace=True, random_state=42)
-])
+# 1. Start with original, unbalanced data
+X = df[FEATURES]
+y = df["DEFAULT"]
 
-X = df_balanced[FEATURES]
-y = df_balanced["DEFAULT"]
-
-print(df_balanced["DEFAULT"].describe())
-
-# Separate continuous vs. binary categorical feature
-X_continuous = X.drop(columns=["CAT_CREDIT_CARD"])
-X_cat = X[["CAT_CREDIT_CARD"]].values
-
-# Train/test split
-X_train_cont, X_test_cont, X_train_cat, X_test_cat, y_train, y_test = train_test_split(
-    X_continuous, X_cat, y, test_size=0.2, random_state=42
+# 2. Split before balancing
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
 )
 
-# Scale only continuous features
+# 3. Oversample only training set (manual like before)
+#train_df = pd.concat([X_train, y_train], axis=1)
+#df_high = train_df[train_df["DEFAULT"] == 1]
+
+#train_df_balanced = pd.concat([
+ #   train_df,
+  #  df_high.sample(n=373, replace=True, random_state=42)
+#])
+
+#X_train_balanced = train_df_balanced[FEATURES]
+#y_train_balanced = train_df_balanced["DEFAULT"]
+
+# 4. Preprocess as before
+X_train_cont = X_train.drop(columns=["CAT_CREDIT_CARD"])
+X_train_cat = X_train[["CAT_CREDIT_CARD"]].values
+
+X_test_cont = X_test.drop(columns=["CAT_CREDIT_CARD"])
+X_test_cat = X_test[["CAT_CREDIT_CARD"]].values
+
 scaler = StandardScaler()
 X_train_scaled_cont = scaler.fit_transform(X_train_cont)
 X_test_scaled_cont = scaler.transform(X_test_cont)
 
-# Combine scaled continuous + unscaled categorical
 X_train_final = np.hstack([X_train_scaled_cont, X_train_cat])
 X_test_final = np.hstack([X_test_scaled_cont, X_test_cat])
 
-rf_model = RandomForestClassifier(n_estimators=95, max_depth=12, class_weight='balanced', random_state=42)
-rf_model.fit(X_train_final, y_train)
+smote = SMOTE(sampling_strategy=0.95, random_state=42, k_neighbors=5, n_jobs = 7)
+X_train_smote, y_train_smote = smote.fit_resample(X_train_final, y_train)
+
+print("Train set after SMOTE:")
+print(pd.Series(y_train_smote).value_counts(normalize=True))
+
+
+# 5. Train model
+rf_model = RandomForestClassifier(
+    n_estimators=358,
+    max_depth=10,
+    random_state=42
+)
+rf_model.fit(X_train_smote, y_train_smote)
+
+
+#rf_model = RandomForestClassifier(n_estimators=95, max_depth=12, class_weight='balanced', random_state=42)
+#rf_model.fit(X_train_final, y_train)
 
 # --- Feature Importance ---
 importances = rf_model.feature_importances_
