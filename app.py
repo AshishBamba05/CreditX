@@ -38,9 +38,7 @@ def preprocess_data(df):
     df["R_LOAN_INCOME"] = df["LoanAmount"] / (df["Income"] + 1)
     df["R_INTEREST_BURDEN"] = df["InterestRate"] * df["LoanTerm"]
     df["R_CREDIT_UTIL"] = df["LoanAmount"] / (df["CreditScore"] + 1)
-    df["FLAG_HIGH_DTI"] = (df["DTIRatio"] > 0.4).astype(int)
-    df["CREDIT_BIN"] = pd.cut(df["CreditScore"], bins=[300, 579, 669, 739, 799, 850],
-                          labels=["Poor", "Fair", "Good", "Very Good", "Excellent"])
+    df["R_MONTHS_EMPLOYED"] = df["MonthsEmployed"] / (df["Age"] + 1)
     return df
 
 df = preprocess_data(df)
@@ -49,8 +47,8 @@ FEATURES = [
     'R_LOAN_INCOME', 
     'R_INTEREST_BURDEN',
     'R_CREDIT_UTIL',
-    'FLAG_HIGH_DTI',      
-    'CREDIT_BIN',
+    'R_MONTHS_EMPLOYED',
+    'DTIRatio'
 ]
 
 # 1. Start with original, unbalanced data
@@ -63,33 +61,18 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # 4. Preprocess as before
-X_train_cont = X_train.drop(columns=["CREDIT_BIN", "FLAG_HIGH_DTI"])
-X_train_cat = pd.DataFrame({
-    "CREDIT_BIN": X_train["CREDIT_BIN"].cat.codes,
-    "FLAG_HIGH_DTI": X_train["FLAG_HIGH_DTI"]
-}).values
-
-X_test_cont = X_test.drop(columns=["CREDIT_BIN", "FLAG_HIGH_DTI"])
-X_test_cat = pd.DataFrame({
-    "CREDIT_BIN": X_test["CREDIT_BIN"].cat.codes,
-    "FLAG_HIGH_DTI": X_test["FLAG_HIGH_DTI"]
-}).values
-
-
 scaler = StandardScaler()
-X_train_scaled_cont = scaler.fit_transform(X_train_cont)
-X_test_scaled_cont = scaler.transform(X_test_cont)
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
 
-X_train_final = np.hstack([X_train_scaled_cont, X_train_cat])
-X_test_final = np.hstack([X_test_scaled_cont, X_test_cat])
-
-smote = SMOTE(sampling_strategy=0.85, random_state=42, k_neighbors=5, n_jobs = 7)
-X_train_smote, y_train_smote = smote.fit_resample(X_train_final, y_train)
+smote = SMOTE(sampling_strategy=0.8, random_state=42, k_neighbors=5, n_jobs = 7)
+X_train_smote, y_train_smote = smote.fit_resample(X_train_scaled, y_train)
 
 # 5. Train model
 rf_model = RandomForestClassifier(
     n_estimators=335,
     max_depth=10,
+    class_weight="balanced",
     random_state=42
 )
 rf_model.fit(X_train_smote, y_train_smote)
@@ -104,8 +87,8 @@ importance_df = pd.DataFrame({
 
 
 # --- Model Evaluation ---
-y_train_pred = rf_model.predict(X_train_final)
-y_test_pred = rf_model.predict(X_test_final)
+y_train_pred = rf_model.predict(X_train_smote)
+y_test_pred = rf_model.predict(X_test_scaled)
 
 accuracy = accuracy_score(y_test, y_test_pred)
 precision = precision_score(y_test, y_test_pred)
@@ -128,60 +111,54 @@ st.caption("By Ashish V Bamba | [GitHub](https://github.com/AshishBamba05/FinRis
 
 st.subheader("Enter Applicant Financial Details")
 
+age = st.number_input("Age", min_value=0)
+debt = st.number_input("Debt", min_value=0)
+months_employed = st.number_input("Months Employed", min_value=0)
 income = st.number_input("Annual Income ($)", min_value=0.0)
-debt = st.number_input("Total Debt ($)", min_value=0.0)
 loan_amount = st.number_input("Loan Amount ($)", min_value=0.0)
 interest_rate = st.number_input("Interest Rate (%)", min_value=0.0)
 loan_term = st.number_input("Loan Term (in months)", min_value=1)
-credit_score = st.number_input("Credit Score (300–850)", min_value=300, max_value=850)
+credit_score = st.number_input("Credit Score", min_value=0)
 
 
 if st.button("Predict Default Status"):
     r_loan_income = loan_amount / (income + 1)
     r_interest_burden = interest_rate * loan_term
     r_credit_util = loan_amount / (credit_score + 1)
+    r_months_employed = months_employed / (age + 1)
     dti_ratio = debt / (income + 1)
-    flag_high_dti = int(dti_ratio > 0.4)
-    credit_bin_label = pd.cut(
-    pd.Series([credit_score]),
-    bins=[300, 579, 669, 739, 799, 850],
-    labels=["Poor", "Fair", "Good", "Very Good", "Excellent"]
-)
 
-    credit_bin_encoded = credit_bin_label.cat.codes[0]
-
-
-    user_input_cont = [[  
+    user_input = [[  
     r_loan_income, 
     r_interest_burden,
     r_credit_util,
-    dti_ratio,
+    r_months_employed,
+    dti_ratio
 ]]
 
-    user_input_cat = [[flag_high_dti, credit_bin_encoded]]
-    user_input_scaled_cont = scaler.transform(user_input_cont)
-    user_input_final = np.hstack([user_input_scaled_cont, user_input_cat])
+    user_input_scaled = scaler.transform(user_input)
 
-    print("Raw input (cont):", user_input_cont)
-    print("Raw input (cat):", user_input_cat)
-    print("Full input:", user_input_final)
+    print("Raw input:", user_input)
 
-    prediction = rf_model.predict(user_input_final)[0]
-    prob = rf_model.predict_proba(user_input_final)[0][1]  # Probability of default
+    prediction = rf_model.predict(user_input_scaled)[0]
+    prob = rf_model.predict_proba(user_input_scaled)[0][1]  # Probability of default
 
 
     insert_prediction(
-        income, debt, 
-        dti_ratio, 
+        income,
         loan_amount, interest_rate,  
-        loan_term, credit_score,
+        loan_term,
+        age,
+        months_employed,
+        credit_score,
+        debt,
         prediction
     )
 
     zero_fields = 0
 
     fields_to_check = [
-        income, debt, loan_amount, interest_rate,  
+        income, age, debt, months_employed, loan_amount, interest_rate,  
         loan_term, credit_score
     ]
 
@@ -304,11 +281,12 @@ if st.button("Drop & Recreate Prediction Table"):
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             income FLOAT,
             debt FLOAT,
-            dti_ratio FLOAT,
+            age INT,
+            months_employed INT,
             loan_amount FLOAT,
             interest_rate FLOAT,
             loan_term FLOAT,
-            credit_score FLOAT,
+            credit_score INT,
             score INTEGER
         )
     """)
@@ -318,6 +296,7 @@ if st.button("Drop & Recreate Prediction Table"):
 
     st.success("✅ Table has been dropped and recreated.")
     st.dataframe(pd.DataFrame(columns=[
-        "id", "timestamp", "income", "debt", "dti_ratio",
-        "loan_amount", "interest_rate", "loan_term", "credit_score", "score"
+        "id", "timestamp", "income", "loan_amount",
+        "age", "months_employed", "debt",
+        "interest_rate", "loan_term", "credit_score", "score"
     ]))

@@ -8,8 +8,7 @@ def get_connection():
     return sqlite3.connect(DB_PATH)
 
 
-def insert_prediction(income, debt,
-                      dti_ratio,
+def insert_prediction(income, age, debt, months_employed,
                       loan_amount, interest_rate,
                       loan_term, credit_score,
                       score):
@@ -19,8 +18,10 @@ def insert_prediction(income, debt,
 
     cursor.execute("""
         INSERT INTO predictions (
-            income, debt,
-            dti_ratio,
+            income,
+            age,
+            debt,
+            months_employed,
             loan_amount,
             interest_rate,
             loan_term,
@@ -28,8 +29,10 @@ def insert_prediction(income, debt,
             score
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """, (
-        income, debt,
-        dti_ratio,
+        income,
+        age,
+        debt,
+        months_employed,
         loan_amount,
         interest_rate,
         loan_term,
@@ -67,8 +70,9 @@ def fetch_predictions():
         id,
         timestamp,
         income,
-        debt,
-        dti_ratio,
+        debt,  
+        age,
+        months_employed,
         loan_amount,
         interest_rate,
         loan_term,

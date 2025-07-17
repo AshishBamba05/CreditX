@@ -6,11 +6,12 @@ SELECT
     ELSE 'High Income'
   END AS income_bracket,
 
-  CASE
-    WHEN {debt} < 5000 THEN 'Low Debt'
-    WHEN {debt} BETWEEN 5000 AND 10000 THEN 'Mid Debt'
-    ELSE 'High Debt'
-  END AS debt_bracket,
+  SELECT
+    CASE
+      WHEN {debt} < 5000 THEN 'Low Debt'
+      WHEN {debt} BETWEEN 5000 AND 10000 THEN 'Mid Debt'
+      ELSE 'High Debt'
+    END AS debt_bracket
 
 
 -- [latest_score_with_label]
