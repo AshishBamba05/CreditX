@@ -34,12 +34,12 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet Fin
 - The model asks users to answer the following questions to extract features.
 - Here are instances of raw features the model extracts and directly uses in the ML model:
   -  **Raw Features**
-    - `InterestRate`
-    - `LoanAmount` 
-    - `Income`
-    - `MonthsEmployed`
-    - `Education`
-    - `HasCoSigner`
+      - `InterestRate`
+      - `LoanAmount` 
+      - `Income`
+      - `MonthsEmployed`
+      - `Education`
+      - `HasCoSigner`
       
   - **Engineered Features**
     - `R_CREDIT_UTIL = LoanAmount / (CreditScore + 1)` — loan amount to credit score ratio
