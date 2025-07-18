@@ -346,7 +346,8 @@ if st.button("Predict Default Status"):
 
     sql = run_sql_query_from_file("ex_queries.sql", "classify_user",
                                   income=income,
-                                 # expenditure=expenditure_12
+                                  dti_ratio=dti_ratio,
+                                  credit_score=credit_score
                                   )
 
     if sql:

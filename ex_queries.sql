@@ -10,7 +10,7 @@ SELECT
       WHEN {dti_ratio} < 0.2 THEN 'Low Debt'
       WHEN {dti_ratio} BETWEEN 0.2 AND 0.35 THEN 'Mid Debt'
       ELSE 'High Debt'
-    END AS debt_bracket
+    END AS debt_bracket,
 
     CASE
       WHEN {credit_score} < 580 THEN 'Poor Credit'
