@@ -88,7 +88,8 @@ The same procedure was applied for values the user inserted.
 
  All things considered, here is how my model ranked each feature in terms of predictive value across the board: 
  
-<img width="704" height="400" alt="newplot (1)" src="https://github.com/user-attachments/assets/572ae3ed-5b15-4319-ad86-c652dd2d3295" />
+<img width="704" height="400" alt="newplot (3)" src="https://github.com/user-attachments/assets/d0ee582b-436e-43a1-b651-d6f5e66b49eb" />
+
 
 
 - I used **XGBoost** from **Scikit-Learn** to build the predictive model, with fine-tuned hyperparemeters for optimal accuracy:
