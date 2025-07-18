@@ -33,7 +33,7 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet Fin
 - The model is trained on a [Kaggle dataset](https://www.kaggle.com/datasets/conorsully1/credit-score) and split using an 81.2/18.8 train-test ratio.
 - The model asks users to answer the following questions to extract features.
 - Here are instances of raw features the model extracts and directly uses in the ML model:
-  -**Raw Features**
+-  **Raw Features**
     - `InterestRate`
     - `LoanAmount` 
     - `Income`
