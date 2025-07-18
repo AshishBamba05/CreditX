@@ -33,7 +33,7 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet Fin
 - The model is trained on a [Kaggle dataset](https://www.kaggle.com/datasets/conorsully1/credit-score) and split using an 81.2/18.8 train-test ratio.
 - The model asks users to answer the following questions to extract features.
 - Here are instances of raw features the model extracts and directly uses in the ML model:
--  **Raw Features**
+  -  **Raw Features**
     - `InterestRate`
     - `LoanAmount` 
     - `Income`
@@ -41,10 +41,10 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet Fin
     - `Education`
     - `HasCoSigner`
       
-- **Engineered Features**
-  - `R_CREDIT_UTIL = LoanAmount / (CreditScore + 1)` — loan amount to credit score ratio
-  - `R_SCORE_PER_LINE= CreditScore / (NumCreditLines + 1)` — credit score to credit lines ratio
-  - `R_Income_Age = Income / (Age + 1) ` - income-to-age ratio
+  - **Engineered Features**
+    - `R_CREDIT_UTIL = LoanAmount / (CreditScore + 1)` — loan amount to credit score ratio
+    - `R_SCORE_PER_LINE= CreditScore / (NumCreditLines + 1)` — credit score to credit lines ratio
+    - `R_Income_Age = Income / (Age + 1) ` - income-to-age ratio
   
     
 - Since the dataset initially featured heavy class imbalance (Non-default > default), I resorted using SMOTEEN to avoid the risk of underfitting:
