@@ -112,6 +112,7 @@ The same procedure was applied for values the user inserted.
 
 
 ## 📊 Model Performance
+- ✅ **AUC**: 0.751
 - ✅ **Precision**: 0.283
 - ✅ **Recall**: 0.506
 - ✅ **F1 Score**: 0.363
