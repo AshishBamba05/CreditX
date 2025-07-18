@@ -8,14 +8,21 @@ def get_connection():
     return sqlite3.connect(DB_PATH)
 
 
-def insert_prediction(income, age, months_employed,
-                      loan_amount, interest_rate,
-                      loan_term, credit_score,
-                      education, 
-                      numCreditLines,
-                      loan_purpose,
-                      has_coSigner, has_mortgage,
-                      score):
+def insert_prediction(income,
+        age,
+        months_employed,
+        loan_amount,
+        interest_rate,
+        loan_term,
+        credit_score,
+        has_coSigner,
+        has_mortgage,
+        education,
+        loan_purpose,
+        numCreditLines,
+        dti_ratio,
+        has_dependents,
+        marital_status):
 
     conn = get_connection()
     cursor = conn.cursor()
@@ -29,13 +36,16 @@ def insert_prediction(income, age, months_employed,
             interest_rate,
             loan_term,
             credit_score,
-            education,
-            numCreditLines,
-            loan_purpose,
             has_coSigner,
             has_mortgage,
+            education,
+            loan_purpose,
+            numCreditLines,
+            dti_ratio,
+            has_dependents,
+            marital_status,
             score
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         income,
         age,
@@ -43,12 +53,15 @@ def insert_prediction(income, age, months_employed,
         loan_amount,
         interest_rate,
         loan_term,
-        education,
-        loan_purpose,
         credit_score,
         has_coSigner,
         has_mortgage,
+        education,
+        loan_purpose,
         numCreditLines,
+        dti_ratio,
+        has_dependents,
+        marital_status,
         score
     ))
 
@@ -81,18 +94,21 @@ def fetch_predictions():
     SELECT 
         id,
         timestamp,
-        income,  
+        income,
         age,
         months_employed,
         loan_amount,
         interest_rate,
         loan_term,
         credit_score,
-        education,
-        loan_purpose,
         has_coSigner,
         has_mortgage,
+        education,
+        dti_ratio,
         numCreditLines,
+        loan_purpose,
+        has_dependents,
+        marital_status,
         score,
         CASE
             WHEN score = 1 THEN '🔴 Default'

@@ -3,20 +3,19 @@ DROP TABLE IF EXISTS predictions;
 CREATE TABLE predictions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-  loan_amount FLOAT,
   income FLOAT,
+  age INT,
+  months_employed INT,
+  loan_amount FLOAT,
   interest_rate FLOAT,
-  loan_term INTEGER,
-  credit_score INTEGER,
-
-  r_loan_income FLOAT,
-  r_interest_burden FLOAT,
-  r_credit_util FLOAT,
-
-  age INTEGER,
-  months_employed INTEGER,
-  has_coSigner INTEGER,
-  has_mortgage INTEGER,
-
+  loan_term INT,
+  credit_score INT,
+  has_coSigner INT,
+  has_mortgage INT,
+  dti_ratio INT,
+  numCreditLines INT,
+  loan_purpose INT,
+  has_dependents INT,
+  marital_status INT,
   score INTEGER
 );

@@ -1,5 +1,5 @@
 import streamlit as st
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from imblearn.combine import SMOTEENN
@@ -11,7 +11,7 @@ import numpy as np
 from collections import Counter
 from sklearn.compose import ColumnTransformer
 from xgboost import XGBClassifier
-
+from sklearn.dummy import DummyClassifier
 
 from db_utils import (
     insert_prediction,
@@ -26,9 +26,6 @@ conn = get_connection()
 cursor = conn.cursor()
 
 # --- Load & Prepare Dataset ---
-
-
-
 @st.cache_data
 def load_data():
     df = pd.read_csv("Loan_default.csv")
@@ -36,16 +33,18 @@ def load_data():
 
 df = load_data()
 
-
 @st.cache_data
 def preprocess_data(df):
-    #df["R_LOAN_INCOME"] = df["LoanAmount"] / (df["Income"] + 1)
     df["R_CREDIT_UTIL"] = df["LoanAmount"] / (df["CreditScore"] + 1)
     df["HasCoSigner"] = df["HasCoSigner"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
     df["HasMortgage"] = df["HasMortgage"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
     df["Education"] = df["Education"].map({"Bachelor's": 0, "High School": 1, "Other": 2}).fillna(0).astype(int)
     df["R_SCORE_PER_LINE"] = df["CreditScore"] / (df["NumCreditLines"] + 1)
-    df["R_Income_Age"] = (df["Income"] / df["Age"])
+    df["R_Income_Age"] = df["Income"] / df["Age"]
+    df["HasDependents"] = df["HasDependents"].map({'Yes': 1, 'No': 0}).fillna(0).astype(int)
+    df["LoanPurpose"] = df["LoanPurpose"].map({'Business': 0, 'Home': 1, 'Other': 2}).fillna(0).astype(int)
+    df["MaritalStatus"] = df["MaritalStatus"].map({'Married': 0, 'Divorced': 1, 'Other': 2}).fillna(0).astype(int)
+    df["EmploymentType"] = df["EmploymentType"].map({'Unemployed': 0, 'Part Time': 1, 'Other': 2}).fillna(0).astype(int)
     return df
 
 df = preprocess_data(df)
@@ -53,30 +52,42 @@ df = preprocess_data(df)
 print(df["Default"].describe())
 
 continuous_features = [
+    'Age',
     'Income',
-    'InterestRate',
-    'R_CREDIT_UTIL',
-    'MonthsEmployed',
-    'R_SCORE_PER_LINE',
     'LoanAmount',
-    'R_Income_Age',
+    'CreditScore',
+    'MonthsEmployed',
+    'NumCreditLines',
+    'InterestRate',
+    'LoanTerm',
+    'DTIRatio'
 ]
 
-categorical_features = ['Education', 'HasCoSigner']
+categorical_features = [
+    'Education',
+    'MaritalStatus',
+    'HasMortgage',
+    'HasDependents',
+    'LoanPurpose',
+    'HasCoSigner'
+]
+
+#continuous_features = [
+  #  'R_CREDIT_UTIL',
+#    'R_SCORE_PER_LINE',
+#]
+
+#categorical_features = ['Education', 'HasCoSigner']
 feature_names = continuous_features + categorical_features
 
-# 1. Start with original, unbalanced data
-X = df[continuous_features + categorical_features]
+X = df[feature_names]
 y = df["Default"]
 
-# 2. Split before balancing
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.188, random_state=42
 )
 
-# 4. Preprocess as before
 scaler = StandardScaler()
-
 preprocessor = ColumnTransformer(
     transformers=[
         ('cont', scaler, continuous_features),
@@ -90,10 +101,9 @@ X_test_scaled = preprocessor.transform(X_test)
 smote_enn = SMOTEENN(random_state=42)
 X_train_scaled, y_train = smote_enn.fit_resample(X_train_scaled, y_train)
 
-# 5. Train model
 xgb_model = XGBClassifier(
     n_estimators=200,
-    max_depth=1,
+    max_depth=3,
     scale_pos_weight=len(y_train[y_train == 0]) / len(y_train[y_train == 1]),
     use_label_encoder=False,
     eval_metric='logloss',
@@ -102,15 +112,16 @@ xgb_model = XGBClassifier(
 
 xgb_model.fit(X_train_scaled, y_train)
 
-# --- Feature Importance ---
-importances = xgb_model.feature_importances_
+dummy = DummyClassifier(strategy='most_frequent')  # or 'stratified'
+dummy.fit(X_train_scaled, y_train)
+y_dummy_pred = dummy.predict(X_test)
+print(f1_score(y_test, y_dummy_pred))
+
 importance_df = pd.DataFrame({
     'Feature': feature_names,
-    'Importance': importances
+    'Importance': xgb_model.feature_importances_
 }).sort_values(by='Importance', ascending=True)
 
-
-# --- Model Evaluation ---
 y_train_pred = xgb_model.predict(X_train_scaled)
 y_test_pred = xgb_model.predict(X_test_scaled)
 
@@ -144,7 +155,11 @@ loan_term = st.number_input("Loan Term (in months)", min_value=1)
 credit_score = st.number_input("Credit Score", min_value=0)
 has_coSigner = st.checkbox("Do you have a co-signer?", help="Select if another person is legally responsible for this loan with you.")
 has_mortgage = st.checkbox("Do you have a mortgage?", help="Select if you have a mortgage on this loan.")
+has_dependents = st.checkbox("Do you have dependents?", help="Select if you have any dependents on this loan.")
 credit_lines = st.number_input("Number of Credit Lines", min_value=0)
+dti_ratio = st.number_input("DTI Ratio", min_value=0.0)
+
+
 education = st.selectbox(
     "Highest Education Level",
     ["Bachelor's", "High School", "Other"]
@@ -153,18 +168,27 @@ loan_purpose = st.selectbox(
     "Loan Purpose",
     ["Business", "Home", "Other"]
 )
+marital_status = st.selectbox(
+    "Marital Status",
+    ["Married", "Divorced", "Other"]
+)
 
-st.write()
+y_probs = xgb_model.predict_proba(X_test_scaled)[:, 1]
+thresholds = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+for t in thresholds:
+    y_pred = (y_probs > t).astype(int)
+    p = precision_score(y_test, y_pred)
+    r = recall_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+    print(f"Threshold: {t} | Precision: {p:.3f} | Recall: {r:.3f} | F1 Score: {f1:.3f}")
+
+auc_score = roc_auc_score(y_test, y_probs)
+print(f"AUC Score: {auc_score:.3f}")
 
 
 if st.button("Predict Default Status"):
-    r_loan_income = loan_amount / (income + 1)
-    r_interest_burden = interest_rate * loan_term
-    r_credit_util = loan_amount / (credit_score + 1)
-    r_months_employed = months_employed / (age + 1)
     has_coSigner = 1 if has_coSigner else 0
     has_mortgage = 1 if has_mortgage else 0
-    r_score_per_line = credit_score / (credit_lines + 1)
 
     loan_purpose_map = {
         "Business": 0,
@@ -181,47 +205,64 @@ if st.button("Predict Default Status"):
     education = education_map.get(education, 2)
 
     user_input = [[  
-    r_loan_income, 
-    r_interest_burden,
-    r_credit_util,
-    r_months_employed,
+    age,
+    months_employed,
+    income,
+    loan_amount,
+    interest_rate,
+    loan_term,
+    credit_score,
     has_coSigner,
     has_mortgage,
     loan_purpose,
     education,
-    r_loan_per_line,
-    r_credit_lines_income
+    credit_lines,
+    dti_ratio,
+    has_dependents,
+    marital_status,
+
 ]]
 
     user_input_scaled = scaler.transform(user_input)
 
     print("Raw input:", user_input)
 
-    prediction = rf_model.predict(user_input_scaled)[0]
-    prob = rf_model.predict_proba(user_input_scaled)[0][1]  # Probability of default
-
-
     insert_prediction(
-        income,
-        loan_amount, interest_rate,  
-        loan_term,
-        age,
-        months_employed,
-        credit_score,
-        has_coSigner,
-        has_mortgage,
-        loan_purpose,
-        education,
-        credit_lines,
-        prediction
+    age,
+    months_employed,
+    income,
+    loan_amount,
+    interest_rate,
+    loan_term,
+    credit_score,
+    has_coSigner,
+    has_mortgage,
+    loan_purpose,
+    education,
+    credit_lines,
+    dti_ratio,
+    has_dependents,
+    marital_status,
     )
 
     zero_fields = 0
 
     fields_to_check = [
-        income, age, months_employed, loan_amount, interest_rate,  
-        has_coSigner, has_mortgage, loan_term, credit_score, education,
-        loan_purpose, credit_lines
+    age,
+    months_employed,
+    income,
+    loan_amount,
+    interest_rate,
+    loan_term,
+    credit_score,
+    has_coSigner,
+    has_mortgage,
+    loan_purpose,
+    education,
+    credit_lines,
+    dti_ratio,
+    has_dependents,
+    marital_status,
     ]
 
     for val in fields_to_check:
@@ -351,6 +392,9 @@ if st.button("Drop & Recreate Prediction Table"):
             education INT,
             loan_purpose INT,
             numCreditLines INT,
+            has_dependents INT,
+            marital_status INT,
+            dti_ratio FLOAT,
             score INTEGER
         )
     """)
@@ -364,5 +408,6 @@ if st.button("Drop & Recreate Prediction Table"):
         "age", "months_employed", 
         "interest_rate", "loan_term", "credit_score", "has_coSigner",
         "education", "loan_purpose", "numCreditLines",
+         "has_dependents", "marital_status", "dti_ratio",
          "has_mortgage", "score"
     ]))
