@@ -30,44 +30,26 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet Fin
 
 ## 🚀 How It Works
 
-- The model is trained on a [Kaggle dataset](https://www.kaggle.com/datasets/conorsully1/credit-score) and split using an 80/20 train-test ratio.
-Once raw input features (like `debt, income, mid-/full- year expenditure funds, mid-/full- year education funds, etc.`) are extracted, the model applies **feature engineering** to derive additional signals:
-
-  - `r_debt_income = debt / (income + 1)` — debt-to-income ratio  
-  - `r_expenditure = t_expenditure_12 / (t_expenditure_6 + 1)` — full- to mid- year expenditure ratio
-  - `savings = savings_amount` - total annual savings
-  - `r_education = t_education_12 / (t_education_6 + 1)` - full- to mid- year education spending
-  - `cat_credit_card = 1 if has_credit_card else 0` - user's credit card status
-  - `t_gambling_12 = gambling` - annual gambling expenditure
+- The model is trained on a [Kaggle dataset](https://www.kaggle.com/datasets/conorsully1/credit-score) and split using an 81.2/18.8 train-test ratio.
+- The model asks users to answer the following questions to extract features. Here are instances of raw features the model extracts and diretly uses in the ML model:
+  - `InterestRate`
+  - `LoanAmount` 
+  - `Income`
+  - `MonthsEmployed`
     
-- Since the dataset initially featured heavy class imbalance (Non-default > default), I inserted 373 randomly synthesized rows (~25%) where `default == 1` into my dataframe
-  - ```
-      df_high = df[df["DEFAULT"] == 1]
-      df_balanced = pd.concat([
-       df,
-       df_high.sample(n=373, replace=True, random_state=42)
-      ])
-    ```
+The model applies **feature engineering** to derive additional signals:
 
-- Using `Pandas` library to concatenate the initial and altered dataframes, here is the description of the new dataframe:
-  - `print(df_balanced["DEFAULT"].describe())`
-    - ```
-      count    1373.000000
-      
-      mean        0.478514
-      
-      std         0.499720
-      
-      min         0.000000
-      
-      25%         0.000000
-      
-      50%         0.000000
-      
-      75%         1.000000
-      
-      max         1.000000
-      ```
+  - `R_CREDIT_UTIL = LoanAmount / (CreditScore + 1)` — loan amount to credit score ratio  
+  - `R_SCORE_PER_LINE= CreditScore / (NumCreditLines + 1)` — credit score to credit lines ratio
+  - `R_Income_Age = Income / (Age + 1) ` - income-to-age ratio
+  
+    
+- Since the dataset initially featured heavy class imbalance (Non-default > default), I resorted using SMOTEEN to avoid the risk of underfitting:
+  - ```
+      smote_enn = SMOTEENN(random_state=42)
+      X_train_scaled, y_train = smote_enn.fit_resample(X_train_scaled, y_train)
+    ```
+  To ensure accurate metrics, this was only applied to **Training** partition after split.
 
 To account for disproportionate impact, I used z-score normalization via the `StandardScaler` library to normalize all **continuous** variables
 
