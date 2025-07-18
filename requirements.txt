@@ -1,7 +1,7 @@
-streamlit
-pandas
+streamlit==1.35.0
+pandas==2.2.2
 scikit-learn==1.2.2
 imbalanced-learn==0.10.1
-xgboost
-plotly
-numpy
+xgboost==1.7.6
+plotly==5.21.0
+numpy==1.24.4
