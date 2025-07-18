@@ -48,6 +48,8 @@ def preprocess_data(df):
     df["HasMortgage"] = df["HasMortgage"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
     df["Education"] = df["Education"].map({"Bachelor's": 0, "High School": 1, "Other": 2}).fillna(0).astype(int)
     df["R_SCORE_PER_LINE"] = df["CreditScore"] / (df["NumCreditLines"] + 1)
+    df["Income_Age"] = (df["Income"] / df["Age"])
+    df["R_LINES_AGE"] = df["LoanTerm"] / (12 * df["Age"] + 1)
     return df
 
 df = preprocess_data(df)
@@ -56,12 +58,13 @@ print(df["Default"].describe())
 
 continuous_features = [
     'Income',
-    'Age',
     'InterestRate',
     'R_CREDIT_UTIL',
     'MonthsEmployed',
     'R_SCORE_PER_LINE',
-    'LoanAmount'
+    'LoanAmount',
+    'Income_Age',
+    #'R_LINES_AGE'
 ]
 
 categorical_features = ['Education']
