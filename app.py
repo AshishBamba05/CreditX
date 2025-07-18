@@ -2,9 +2,7 @@ import streamlit as st
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from imblearn.over_sampling import SMOTE
 from imblearn.combine import SMOTEENN
-from imblearn.over_sampling import ADASYN
 from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 import sqlite3
@@ -42,14 +40,12 @@ df = load_data()
 @st.cache_data
 def preprocess_data(df):
     #df["R_LOAN_INCOME"] = df["LoanAmount"] / (df["Income"] + 1)
-    df["R_INTEREST_BURDEN"] = df["InterestRate"] * df["LoanTerm"]
     df["R_CREDIT_UTIL"] = df["LoanAmount"] / (df["CreditScore"] + 1)
     df["HasCoSigner"] = df["HasCoSigner"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
     df["HasMortgage"] = df["HasMortgage"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
     df["Education"] = df["Education"].map({"Bachelor's": 0, "High School": 1, "Other": 2}).fillna(0).astype(int)
     df["R_SCORE_PER_LINE"] = df["CreditScore"] / (df["NumCreditLines"] + 1)
     df["R_Income_Age"] = (df["Income"] / df["Age"])
-    df["R_LINES_AGE"] = df["LoanTerm"] / (12 * df["Age"] + 1)
     return df
 
 df = preprocess_data(df)
@@ -64,10 +60,9 @@ continuous_features = [
     'R_SCORE_PER_LINE',
     'LoanAmount',
     'R_Income_Age',
-    #'R_LINES_AGE'
 ]
 
-categorical_features = ['Education']
+categorical_features = ['Education', 'HasCoSigner']
 feature_names = continuous_features + categorical_features
 
 # 1. Start with original, unbalanced data
