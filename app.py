@@ -301,8 +301,6 @@ def style_by_default_flag(row):
 
 styled_df = prediction_df.style.apply(style_by_default_flag, axis=1)
 
-st.subheader("Feature Importance")
-
 fig = go.Figure(go.Bar(
     x=importance_df['Importance'],
     y=importance_df['Feature'],
@@ -313,7 +311,7 @@ fig = go.Figure(go.Bar(
 fig.update_layout(
     xaxis_title="Importance",
     yaxis_title="Feature",
-    title="Random Forest Feature Importances",
+    title="XGBoost Feature Importances",
     title_font_size=20,
     margin=dict(l=100, r=20, t=40, b=20),
     height=400
