@@ -1,7 +1,7 @@
-pandas
-numpy
-scikit-learn
-matplotlib
 streamlit
-imbalanced-learn
+pandas
+scikit-learn==1.2.2
+imbalanced-learn==0.10.1
+xgboost
 plotly
+numpy

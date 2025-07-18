@@ -77,7 +77,6 @@ categorical_features = [
 #    'R_SCORE_PER_LINE',
 #]
 
-#categorical_features = ['Education', 'HasCoSigner']
 feature_names = continuous_features + categorical_features
 
 X = df[feature_names]
@@ -101,21 +100,36 @@ X_test_scaled = preprocessor.transform(X_test)
 smote_enn = SMOTEENN(random_state=42)
 X_train_scaled, y_train = smote_enn.fit_resample(X_train_scaled, y_train)
 
-xgb_model = XGBClassifier(
-    n_estimators=200,
-    max_depth=3,
-    scale_pos_weight=len(y_train[y_train == 0]) / len(y_train[y_train == 1]),
-    use_label_encoder=False,
-    eval_metric='logloss',
-    random_state=42
-)
+@st.cache_resource
+def train_model(X_train_scaled, y_train):
+    xgb_model = XGBClassifier(
+        n_estimators=200,
+        max_depth=3,
+        scale_pos_weight=len(y_train[y_train == 0]) / len(y_train[y_train == 1]),
+        use_label_encoder=False,
+        eval_metric='logloss',
+        random_state=42
+    )
+    xgb_model.fit(X_train_scaled, y_train)
+    return xgb_model
 
-xgb_model.fit(X_train_scaled, y_train)
 
-dummy = DummyClassifier(strategy='most_frequent')  # or 'stratified'
-dummy.fit(X_train_scaled, y_train)
-y_dummy_pred = dummy.predict(X_test)
-print(f1_score(y_test, y_dummy_pred))
+@st.cache_resource
+def train_dummy_model(X_train_scaled, y_train):
+    dummy = DummyClassifier(strategy='most_frequent')  # or 'stratified'
+    dummy.fit(X_train_scaled, y_train)
+    return dummy
+
+
+xgb_model = train_model(X_train_scaled, y_train)
+dummy_model = train_dummy_model(X_train_scaled, y_train)
+
+y_pred = xgb_model.predict(X_test_scaled)
+y_dummy_pred = dummy_model.predict(X_test_scaled)
+
+print("f1 score:", f1_score(y_test, y_dummy_pred))
+print("recall score:", recall_score(y_test, y_dummy_pred))
+print("precision score:", precision_score(y_test, y_dummy_pred))
 
 importance_df = pd.DataFrame({
     'Feature': feature_names,
