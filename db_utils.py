@@ -22,7 +22,8 @@ def insert_prediction(income,
         numCreditLines,
         dti_ratio,
         has_dependents,
-        marital_status):
+        marital_status,
+        score):
 
     conn = get_connection()
     cursor = conn.cursor()

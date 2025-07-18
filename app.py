@@ -187,6 +187,7 @@ marital_status = st.selectbox(
     ["Married", "Divorced", "Other"]
 )
 
+
 y_probs = xgb_model.predict_proba(X_test_scaled)[:, 1]
 thresholds = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
 for t in thresholds:
@@ -203,80 +204,99 @@ print(f"AUC Score: {auc_score:.3f}")
 if st.button("Predict Default Status"):
     has_coSigner = 1 if has_coSigner else 0
     has_mortgage = 1 if has_mortgage else 0
+    has_dependents = 1 if has_dependents else 0
 
-    loan_purpose_map = {
-        "Business": 0,
-        "Home": 1,
-        "Other": 2
-    }
-    loan_purpose = loan_purpose_map.get(loan_purpose, 2)
+    loan_purpose_map = {"Business": 0, "Home": 1, "Other": 2}
+    education_map = {"Bachelor's": 0, "High School": 1, "Other": 2}
+    marital_status_map = {"Married": 0, "Divorced": 1, "Other": 2}
 
-    education_map = {
-        "Bachelor's": 0,
-        "High School": 1,
-        "Other": 2
-    }
-    education = education_map.get(education, 2)
+    loan_purpose = loan_purpose_map[loan_purpose]
+    education = education_map[education]
+    marital_status = marital_status_map[marital_status]
 
-    user_input = [[  
-    age,
-    months_employed,
-    income,
-    loan_amount,
-    interest_rate,
-    loan_term,
-    credit_score,
-    has_coSigner,
-    has_mortgage,
-    loan_purpose,
-    education,
-    credit_lines,
-    dti_ratio,
-    has_dependents,
-    marital_status,
+    user_input_list = [[  
+        age,
+        months_employed,
+        income,
+        loan_amount,
+        interest_rate,
+        loan_term,
+        credit_score,
+        has_coSigner,
+        has_mortgage,
+        loan_purpose,
+        education,
+        credit_lines,
+        dti_ratio,
+        has_dependents,
+        marital_status
+    ]]
 
-]]
+    user_input = pd.DataFrame(user_input_list, columns=[
+        'Age',
+        'MonthsEmployed',
+        'Income',
+        'LoanAmount',
+        'InterestRate',
+        'LoanTerm',
+        'CreditScore',
+        'HasCoSigner',
+        'HasMortgage',
+        'LoanPurpose',
+        'Education',
+        'NumCreditLines',
+        'DTIRatio',
+        'HasDependents',
+        'MaritalStatus'
+    ])
 
-    user_input_scaled = scaler.transform(user_input)
+    user_input_scaled = preprocessor.transform(user_input)
+
+    # Generate prediction for the current user input
+    prob = xgb_model.predict_proba(user_input_scaled)[0][1]
+    prediction = int(prob > 0.3)  
+    score = prediction
+
 
     print("Raw input:", user_input)
 
     insert_prediction(
-    age,
-    months_employed,
-    income,
-    loan_amount,
-    interest_rate,
-    loan_term,
-    credit_score,
-    has_coSigner,
-    has_mortgage,
-    loan_purpose,
-    education,
-    credit_lines,
-    dti_ratio,
-    has_dependents,
-    marital_status,
+        age,
+        months_employed,
+        income,
+        loan_amount,
+        interest_rate,
+        loan_term,
+        credit_score,
+        has_coSigner,
+        has_mortgage,
+        loan_purpose,
+        education,
+        credit_lines,
+        dti_ratio,
+        has_dependents,
+        marital_status,
+        score
     )
 
     zero_fields = 0
 
     fields_to_check = [
-    age,
-    months_employed,
-    income,
-    loan_amount,
-    interest_rate,
-    loan_term,
-    credit_score,
-    has_coSigner,
-    has_mortgage,
-    loan_purpose,
-    education,
-    credit_lines,
-    dti_ratio,
-    has_dependents,
-    marital_status,
+        age,
+        months_employed,
+        income,
+        loan_amount,
+        interest_rate,
+        loan_term,
+        credit_score,
+        has_coSigner,
+        has_mortgage,
+        loan_purpose,
+        education,
+        credit_lines,
+        dti_ratio,
+        has_dependents,
+        marital_status,
     ]
 
     for val in fields_to_check:
@@ -326,7 +346,6 @@ if st.button("Predict Default Status"):
 
     sql = run_sql_query_from_file("ex_queries.sql", "classify_user",
                                   income=income,
-                                  debt=debt
                                  # expenditure=expenditure_12
                                   )
 
