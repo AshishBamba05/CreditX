@@ -41,10 +41,10 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet Fin
     - `Education`
     - `HasCoSigner`
       
-  - **Engineered Features**
-    - `R_CREDIT_UTIL = LoanAmount / (CreditScore + 1)` — loan amount to credit score ratio  
-    - `R_SCORE_PER_LINE= CreditScore / (NumCreditLines + 1)` — credit score to credit lines ratio
-    - `R_Income_Age = Income / (Age + 1) ` - income-to-age ratio
+- **Engineered Features**
+  - `R_CREDIT_UTIL = LoanAmount / (CreditScore + 1)` — loan amount to credit score ratio
+  - `R_SCORE_PER_LINE= CreditScore / (NumCreditLines + 1)` — credit score to credit lines ratio
+  - `R_Income_Age = Income / (Age + 1) ` - income-to-age ratio
   
     
 - Since the dataset initially featured heavy class imbalance (Non-default > default), I resorted using SMOTEEN to avoid the risk of underfitting:
