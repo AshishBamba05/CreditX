@@ -76,11 +76,12 @@ To account for disproportionate impact, I used z-score normalization via the `St
     X_train_scaled = preprocessor.fit_transform(X_train)
     ```
 
-- Since the dataset initially featured heavy class imbalance (Non-default > default), I resorted using SMOTEEN to avoid the risk of underfitting:
-  - ```
-      smote_enn = SMOTEENN(random_state=42)
-      X_train_scaled, y_train = smote_enn.fit_resample(X_train_scaled, y_train)
-    ```
+  - ### Applying SMOTE + EN   
+      - Since the dataset initially featured heavy class imbalance (Non-default > default), I resorted using SMOTEEN to avoid the risk of underfitting:
+      - ```
+        smote_enn = SMOTEENN(random_state=42)
+        X_train_scaled, y_train = smote_enn.fit_resample(X_train_scaled, y_train)
+        ```
 
 The same procedure was applied for values the user inserted.
 
