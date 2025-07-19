@@ -61,23 +61,21 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet Fin
         -  df["MaritalStatus"] = df["MaritalStatus"].map({'Married': 0, 'Divorced': 1, 'Other': 2}).fillna(0).astype(int)
         ```
   
-    
+  - ### StandardScaler()
+      - To account for disproportionate impact, I used z-score normalization via the `StandardScaler` library to normalize all **continuous** variables
 
+          ```
+          scaler = StandardScaler()
+          preprocessor = ColumnTransformer([
+          ('cont', scaler, continuous_features),
+          ('cat', 'passthrough', categorical_features)
+          ])
 
-To account for disproportionate impact, I used z-score normalization via the `StandardScaler` library to normalize all **continuous** variables
-
-    ```
-    scaler = StandardScaler()
-    preprocessor = ColumnTransformer([
-    ('cont', scaler, continuous_features),
-    ('cat', 'passthrough', categorical_features)
-    ])
-
-    X_train_scaled = preprocessor.fit_transform(X_train)
-    ```
+          X_train_scaled = preprocessor.fit_transform(X_train)
+          ```
 
   - ### Applying SMOTE + EN   
-      - Since the dataset initially featured heavy class imbalance (Non-default > default), I resorted using SMOTEEN to avoid the risk of underfitting:
+      - Since the dataset initially featured heavy class imbalance (Non-default > default), I resorted using SMOTEEN to avoid the risk of overfitting:
       - ```
         smote_enn = SMOTEENN(random_state=42)
         X_train_scaled, y_train = smote_enn.fit_resample(X_train_scaled, y_train)
@@ -99,21 +97,22 @@ The same procedure was applied for values the user inserted.
 
 
 
-- I used **XGBoost** from **Scikit-Learn** to build the predictive model, with fine-tuned hyperparemeters for optimal accuracy:
+  - ### XGBoost Model 
+      - I used **XGBoost** from **Scikit-Learn** to build the predictive model, with fine-tuned hyperparemeters for optimal accuracy:
  
-  - ```
-    xgb_model = XGBClassifier(
-    n_estimators=200,
-    max_depth=3,
-    scale_pos_weight=len(y_train[y_train == 0]) / len(y_train[y_train == 1]),
-    use_label_encoder=False,
-    eval_metric='logloss',
-    random_state=42
-    n_jobs=-1
-    )
+      - ```
+        xgb_model = XGBClassifier(
+        n_estimators=200,
+        max_depth=3,
+        scale_pos_weight=len(y_train[y_train == 0]) / len(y_train[y_train == 1]),
+        use_label_encoder=False,
+        eval_metric='logloss',
+        random_state=42
+        n_jobs=-1
+        )
 
-    xgb_model.fit(X_train_scaled, y_train)
-    ```
+        xgb_model.fit(X_train_scaled, y_train)
+        ```
     
 - The application is deployed using **Streamlit**.
 
