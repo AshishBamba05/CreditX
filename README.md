@@ -33,7 +33,7 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet ***
     
         - The model collects the following input features to render predictions in the ML model:
             ```
-            -  **continuous_features** = [
+            -  continuous_features = [
                   - `'Age'`,
                   - `'Income'`,
                   - `'LoanAmount'`,
@@ -45,7 +45,7 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet ***
                   - `'DTIRatio'`
                 ]
         
-            - **categorical_features** = [
+            - categorical_features = [
                 - `'Education',`
                 - `'MaritalStatus',`
                 - `'HasMortgage',`
@@ -53,6 +53,8 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet ***
                 - `'LoanPurpose',`
                 - `'HasCoSigner'`
               ]
+            
+            feature_names = continuous_features + categorical_features
             ```
      
       - Since strings alone can break the compilation of the ML model, I mapped categorical variables to integer representation:
