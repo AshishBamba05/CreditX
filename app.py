@@ -1,9 +1,4 @@
 import streamlit as st
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from imblearn.combine import SMOTEENN
-from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 import sqlite3
 import plotly.graph_objects as go
@@ -11,7 +6,7 @@ import numpy as np
 from collections import Counter
 from sklearn.compose import ColumnTransformer
 from xgboost import XGBClassifier
-from sklearn.dummy import DummyClassifier
+import joblib
 
 from db_utils import (
     insert_prediction,
@@ -21,9 +16,21 @@ from db_utils import (
     get_connection
 )
 
+@st.cache_resource
+def load_model():
+    model = joblib.load("model.joblib")
+    preproc = joblib.load("preprocessor.joblib")
+    return model, preproc
+
+xgb_model, preprocessor = load_model()
+
 # --- DB Connection ---
-conn = get_connection()
-cursor = conn.cursor()
+@st.cache_resource
+def get_db():
+    conn = sqlite3.connect("creditx_predictions.db", check_same_thread=False)
+    return conn, conn.cursor()
+
+conn, cursor = get_db()
 
 # --- Load & Prepare Dataset ---
 @st.cache_data
@@ -33,122 +40,10 @@ def load_data():
 
 df = load_data()
 
-@st.cache_data
-def preprocess_data(df):
-    df["R_CREDIT_UTIL"] = df["LoanAmount"] / (df["CreditScore"] + 1)
-    df["HasCoSigner"] = df["HasCoSigner"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
-    df["HasMortgage"] = df["HasMortgage"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
-    df["Education"] = df["Education"].map({"Bachelor's": 0, "High School": 1, "Other": 2}).fillna(0).astype(int)
-    df["R_SCORE_PER_LINE"] = df["CreditScore"] / (df["NumCreditLines"] + 1)
-    df["R_Income_Age"] = df["Income"] / df["Age"]
-    df["HasDependents"] = df["HasDependents"].map({'Yes': 1, 'No': 0}).fillna(0).astype(int)
-    df["LoanPurpose"] = df["LoanPurpose"].map({'Business': 0, 'Home': 1, 'Other': 2}).fillna(0).astype(int)
-    df["MaritalStatus"] = df["MaritalStatus"].map({'Married': 0, 'Divorced': 1, 'Other': 2}).fillna(0).astype(int)
-    df["EmploymentType"] = df["EmploymentType"].map({'Unemployed': 0, 'Part Time': 1, 'Other': 2}).fillna(0).astype(int)
-    return df
-
-df = preprocess_data(df)
-
-print(df["Default"].describe())
-
-continuous_features = [
-    'Age',
-    'Income',
-    'LoanAmount',
-    'CreditScore',
-    'MonthsEmployed',
-    'NumCreditLines',
-    'InterestRate',
-    'LoanTerm',
-    'DTIRatio'
-]
-
-categorical_features = [
-    'Education',
-    'MaritalStatus',
-    'HasMortgage',
-    'HasDependents',
-    'LoanPurpose',
-    'HasCoSigner'
-]
-
-#continuous_features = [
-  #  'R_CREDIT_UTIL',
-#    'R_SCORE_PER_LINE',
-#]
-
-feature_names = continuous_features + categorical_features
-
-X = df[feature_names]
-y = df["Default"]
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.188, random_state=42
-)
-
-scaler = StandardScaler()
-preprocessor = ColumnTransformer(
-    transformers=[
-        ('cont', scaler, continuous_features),
-        ('cat', 'passthrough', categorical_features)
-    ]
-)
-
-X_train_scaled = preprocessor.fit_transform(X_train)
-X_test_scaled = preprocessor.transform(X_test)
-
-smote_enn = SMOTEENN(random_state=42)
-X_train_scaled, y_train = smote_enn.fit_resample(X_train_scaled, y_train)
-
-@st.cache_resource
-def train_model(X_train_scaled, y_train):
-    xgb_model = XGBClassifier(
-        n_estimators=200,
-        max_depth=3,
-        scale_pos_weight=len(y_train[y_train == 0]) / len(y_train[y_train == 1]),
-        use_label_encoder=False,
-        eval_metric='logloss',
-        random_state=42
-    )
-    xgb_model.fit(X_train_scaled, y_train)
-    return xgb_model
-
-
-@st.cache_resource
-def train_dummy_model(X_train_scaled, y_train):
-    dummy = DummyClassifier(strategy='most_frequent')  # or 'stratified'
-    dummy.fit(X_train_scaled, y_train)
-    return dummy
-
-
-xgb_model = train_model(X_train_scaled, y_train)
-dummy_model = train_dummy_model(X_train_scaled, y_train)
-
-y_pred = xgb_model.predict(X_test_scaled)
-y_dummy_pred = dummy_model.predict(X_test_scaled)
-
-print("f1 score:", f1_score(y_test, y_dummy_pred))
-print("recall score:", recall_score(y_test, y_dummy_pred))
-print("precision score:", precision_score(y_test, y_dummy_pred))
-
-importance_df = pd.DataFrame({
-    'Feature': feature_names,
-    'Importance': xgb_model.feature_importances_
-}).sort_values(by='Importance', ascending=True)
-
-y_train_pred = xgb_model.predict(X_train_scaled)
-y_test_pred = xgb_model.predict(X_test_scaled)
-
-accuracy = accuracy_score(y_test, y_test_pred)
-precision = precision_score(y_test, y_test_pred)
-recall = recall_score(y_test, y_test_pred)
-f1 = f1_score(y_test, y_test_pred)
-
-print(f"Accuracy: {accuracy:.3f}")
-print(f"Precision: {precision:.3f}")
-print(f"Recall: {recall:.3f}")
-print(f"F1 Score: {f1:.3f}")
-
+#importance_df = pd.DataFrame({
+ #   'Feature': feature_names,
+  #  'Importance': xgb_model.feature_importances_
+#}).sort_values(by='Importance', ascending=True)
 
 # --- Streamlit UI ---
 st.title("FinRisk.AI")
@@ -186,19 +81,6 @@ marital_status = st.selectbox(
     "Marital Status",
     ["Married", "Divorced", "Other"]
 )
-
-
-y_probs = xgb_model.predict_proba(X_test_scaled)[:, 1]
-thresholds = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
-for t in thresholds:
-    y_pred = (y_probs > t).astype(int)
-    p = precision_score(y_test, y_pred)
-    r = recall_score(y_test, y_pred)
-    f1 = f1_score(y_test, y_pred)
-    print(f"Threshold: {t} | Precision: {p:.3f} | Recall: {r:.3f} | F1 Score: {f1:.3f}")
-
-auc_score = roc_auc_score(y_test, y_probs)
-print(f"AUC Score: {auc_score:.3f}")
 
 
 if st.button("Predict Default Status"):
@@ -306,20 +188,20 @@ if st.button("Predict Default Status"):
     if zero_fields >= 5:
         st.warning("⚠️ Your inputs contain many zero values. This may result in an inaccurate prediction. Try entering realistic estimates for typical expenses")
 
+    with st.expander("Check Your Score!", expanded=False):
+        latest = fetch_latest_score_with_label()
+        raw_score = latest['score'][0]
+        score = int.from_bytes(raw_score, byteorder='little') if isinstance(raw_score, bytes) else int(raw_score)
 
-    latest = fetch_latest_score_with_label()
-    raw_score = latest['score'][0]
-    score = int.from_bytes(raw_score, byteorder='little') if isinstance(raw_score, bytes) else int(raw_score)
-
-    label = "Default" if score == 1 else "No Default"
+        label = "Default" if score == 1 else "No Default"
 
 
-    fig = go.Figure(go.Indicator(
-    mode="number+gauge",
-    value=prob * 100,  # convert to percent
-    number={'suffix': "%", 'font': {'size': 36}},
-    title={'text': "Probability of Default", 'font': {'size': 24}},
-    gauge={
+        fig = go.Figure(go.Indicator(
+        mode="number+gauge",
+        value=prob * 100,  # convert to percent
+        number={'suffix': "%", 'font': {'size': 36}},
+        title={'text': "Probability of Default", 'font': {'size': 24}},
+        gauge={
         'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "darkgray"},
         'bar': {'color': "red" if prediction == 1 else "green"},
         'bgcolor': "white",
@@ -331,16 +213,16 @@ if st.button("Predict Default Status"):
             {'range': [50, 75], 'color': "#FFA500"},
             {'range': [75, 100], 'color': "#FF4B4B"},
         ]
-    },
-    domain={'x': [0, 1], 'y': [0, 1]}
-    ))
+        },
+        domain={'x': [0, 1], 'y': [0, 1]}
+        ))
 
-    st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True)
 
-    if prediction == 1:
-        st.error(f"⚠️ This user is likely to **default**.\nProbability: {prob:.2%}")
-    else:
-        st.success(f"✅ This user is likely **not** to default.\nProbability: {prob:.2%}")
+        if prediction == 1:
+            st.error(f"⚠️ This user is likely to **default**.\nProbability: {prob:.2%}")
+        else:
+            st.success(f"✅ This user is likely **not** to default.\nProbability: {prob:.2%}")
 
 
 
@@ -370,26 +252,6 @@ def style_by_default_flag(row):
     ] * len(row)
 
 styled_df = prediction_df.style.apply(style_by_default_flag, axis=1)
-
-fig = go.Figure(go.Bar(
-    x=importance_df['Importance'],
-    y=importance_df['Feature'],
-    orientation='h',
-    marker=dict(color='lightskyblue')
-))
-
-fig.update_layout(
-    xaxis_title="Importance",
-    yaxis_title="Feature",
-    title="XGBoost Feature Importances",
-    title_font_size=20,
-    margin=dict(l=100, r=20, t=40, b=20),
-    height=400
-)
-
-st.plotly_chart(fig, use_container_width=True)
-
-
 
 def style_score_cell(val):
     if val == 1:
