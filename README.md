@@ -94,19 +94,19 @@ The same procedure was applied for values the user inserted.
   - ### XGBoost Model 
       - I used **XGBoost** from **Scikit-Learn** to build the predictive model, with fine-tuned hyperparemeters for optimal accuracy:
  
-      - ```
-        xgb_model = XGBClassifier(
-        n_estimators=200,
-        max_depth=3,
-        scale_pos_weight=len(y_train[y_train == 0]) / len(y_train[y_train == 1]),
-        use_label_encoder=False,
-        eval_metric='logloss',
-        random_state=42
-        n_jobs=-1
-        )
+        - ```
+          xgb_model = XGBClassifier(
+          n_estimators=200,
+          max_depth=3,
+          scale_pos_weight=len(y_train[y_train == 0]) / len(y_train[y_train == 1]),
+          use_label_encoder=False,
+          eval_metric='logloss',
+          random_state=42
+          n_jobs=-1
+          )
 
-        xgb_model.fit(X_train_scaled, y_train)
-        ```
+          xgb_model.fit(X_train_scaled, y_train)
+          ```
      -  All things considered, here is how my model ranked each feature in terms of predictive value across the board:
          - <img width="704" height="404" alt="Screen Shot 2025-07-18 at 3 32 58 AM" src="https://github.com/user-attachments/assets/b08b0ce1-a5c4-4c56-bdcd-25abe7cf3365" />
     
