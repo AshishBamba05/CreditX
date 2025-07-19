@@ -34,24 +34,24 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet ***
         - The model collects the following input features to render predictions in the ML model:
             ```
             -  continuous_features = [
-                  - `'Age'`,
-                  - `'Income'`,
-                  - `'LoanAmount'`,
-                  - `'CreditScore'`,
-                  - `'MonthsEmployed'`,
-                  - `'NumCreditLines'`,
-                  - `'InterestRate'`,
-                  - `'LoanTerm'`,
-                  - `'DTIRatio'`
+                   `'Age'`,
+                   `'Income'`,
+                   `'LoanAmount'`,
+                   `'CreditScore'`,
+                   `'MonthsEmployed'`,
+                   `'NumCreditLines'`,
+                   `'InterestRate'`,
+                   `'LoanTerm'`,
+                   `'DTIRatio'`
                 ]
         
             - categorical_features = [
-                - `'Education',`
-                - `'MaritalStatus',`
-                - `'HasMortgage',`
-                - `'HasDependents',`
-                - `'LoanPurpose',`
-                - `'HasCoSigner'`
+                 `'Education',`
+                 `'MaritalStatus',`
+                 `'HasMortgage',`
+                 `'HasDependents',`
+                 `'LoanPurpose',`
+                 `'HasCoSigner'`
               ]
             
             feature_names = continuous_features + categorical_features
