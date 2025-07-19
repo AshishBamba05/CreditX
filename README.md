@@ -4,7 +4,7 @@
 
 ## 🔗 Launch the App
 
-👉 [Launch FinRisk.AI][(https://creditx-nyywptbpkg9gkmtym5qeam.streamlit.app/)] (Recommended: use **Chrome**)  
+👉 [Launch FinRisk.AI](https://creditx-nyywptbpkg9gkmtym5qeam.streamlit.app/) (Recommended: use **Chrome**)  
 ⚠️ *Safari may have display issues due to JavaScript compatibility.*
 
 ## 🖥 Installation
@@ -29,7 +29,7 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet ***
 ## 🚀 How It Works
 
   -  ### The Dataset
-        - The model is trained on a [Kaggle dataset]([(https://www.kaggle.com/datasets/nikhil1e9/loan-default/data)), containing **250K+** financial profiles and split using an 81/19 train-test ratio.
+        - The model is trained on a [Kaggle dataset](https://www.kaggle.com/datasets/nikhil1e9/loan-default/data), containing **250K+** financial profiles and split using an 81/19 train-test ratio.
     
         - The model collects the following input features to render predictions in the ML model:
             ```
