@@ -90,12 +90,6 @@ The same procedure was applied for values the user inserted.
     user_input_final = np.hstack([user_input_scaled_cont, user_input_cat])
     ```
 
- All things considered, here is how my model ranked each feature in terms of predictive value across the board: 
-
-
-<img width="704" height="404" alt="Screen Shot 2025-07-18 at 3 32 58 AM" src="https://github.com/user-attachments/assets/b08b0ce1-a5c4-4c56-bdcd-25abe7cf3365" />
-
-
 
   - ### XGBoost Model 
       - I used **XGBoost** from **Scikit-Learn** to build the predictive model, with fine-tuned hyperparemeters for optimal accuracy:
@@ -113,6 +107,8 @@ The same procedure was applied for values the user inserted.
 
         xgb_model.fit(X_train_scaled, y_train)
         ```
+     -  All things considered, here is how my model ranked each feature in terms of predictive value across the board:
+         - <img width="704" height="404" alt="Screen Shot 2025-07-18 at 3 32 58 AM" src="https://github.com/user-attachments/assets/b08b0ce1-a5c4-4c56-bdcd-25abe7cf3365" />
     
 - The application is deployed using **Streamlit**.
 
