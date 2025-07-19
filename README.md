@@ -32,7 +32,8 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet ***
         - The model is trained on a [Kaggle dataset]([(https://www.kaggle.com/datasets/nikhil1e9/loan-default/data)), containing **250K+** financial profiles and split using an 81/19 train-test ratio.
     
         - The model collects the following input features to render predictions in the ML model:
-            -  **Continuous Features**
+            ```
+            -  **continuous_features** = [
                   - `'Age'`,
                   - `'Income'`,
                   - `'LoanAmount'`,
@@ -42,14 +43,17 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet ***
                   - `'InterestRate'`,
                   - `'LoanTerm'`,
                   - `'DTIRatio'`
+                ]
         
-            - **Categorical Features**
+            - **categorical_features** = [
                 - `'Education',`
                 - `'MaritalStatus',`
                 - `'HasMortgage',`
                 - `'HasDependents',`
                 - `'LoanPurpose',`
                 - `'HasCoSigner'`
+              ]
+            ```
      
       - Since strings alone can break the compilation of the ML model, I mapped categorical variables to integer representation:
         ```
