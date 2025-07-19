@@ -30,22 +30,26 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet Fin
 
 ## 🚀 How It Works
 
-- The model is trained on a [Kaggle dataset](https://www.kaggle.com/datasets/conorsully1/credit-score) and split using an 81/19 train-test ratio.
-- The model asks users to answer the following questions to extract features.
-- Here are instances of raw features the model extracts and directly uses in the ML model:
-  -  **Raw Features**
-      - `InterestRate`
-      - `LoanAmount` 
-      - `Income`
-      - `MonthsEmployed`
-      - `Education`
-      - `HasCoSigner`
-      
-  - **Engineered Features**
-    - `R_CREDIT_UTIL = LoanAmount / (CreditScore + 1)` — loan amount to credit score ratio
-    - `R_SCORE_PER_LINE= CreditScore / (NumCreditLines + 1)` — credit score to credit lines ratio
-    - `R_Income_Age = Income / (Age + 1) ` - income-to-age ratio
-  
+- The model is trained on a [Kaggle dataset]([(https://www.kaggle.com/datasets/nikhil1e9/loan-default/data)), containing **250K+** financial profiles and split using an 81/19 train-test ratio.
+- The model collects the following input features to render predictions in the ML model:
+  -  **Continuous Features**
+      - `'Age'`,
+      - `'Income'`,
+      - `'LoanAmount'`,
+      - `'CreditScore'`,
+      - `'MonthsEmployed'`,
+      - `'NumCreditLines'`,
+      - `'InterestRate'`,
+      - `'LoanTerm'`,
+      - `'DTIRatio'`
+        
+    - **Categorical Features**
+      - `'Education',`
+      - `'MaritalStatus',`
+      - `'HasMortgage',`
+      - `'HasDependents',`
+      - `'LoanPurpose',`
+      - `'HasCoSigner'`
     
 - Since the dataset initially featured heavy class imbalance (Non-default > default), I resorted using SMOTEEN to avoid the risk of underfitting:
   - ```
