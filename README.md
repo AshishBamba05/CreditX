@@ -32,26 +32,26 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet Fin
       The model is trained on a [Kaggle dataset]([(https://www.kaggle.com/datasets/nikhil1e9/loan-default/data)), containing **250K+** financial profiles and split using an 81/19 train-test ratio.
     
   - The model collects the following input features to render predictions in the ML model:
-    -  **Continuous Features**
-      - `'Age'`,
-      - `'Income'`,
-      - `'LoanAmount'`,
-      - `'CreditScore'`,
-      - `'MonthsEmployed'`,
-      - `'NumCreditLines'`,
-      - `'InterestRate'`,
-      - `'LoanTerm'`,
-      - `'DTIRatio'`
+      -  **Continuous Features**
+        - `'Age'`,
+        - `'Income'`,
+        - `'LoanAmount'`,
+        - `'CreditScore'`,
+        - `'MonthsEmployed'`,
+        - `'NumCreditLines'`,
+        - `'InterestRate'`,
+        - `'LoanTerm'`,
+        - `'DTIRatio'`
         
-    - **Categorical Features**
-      - `'Education',`
-      - `'MaritalStatus',`
-      - `'HasMortgage',`
-      - `'HasDependents',`
-      - `'LoanPurpose',`
-      - `'HasCoSigner'`
+      - **Categorical Features**
+        - `'Education',`
+        - `'MaritalStatus',`
+        - `'HasMortgage',`
+        - `'HasDependents',`
+        - `'LoanPurpose',`
+        - `'HasCoSigner'`
      
-    - Since strings alone can break the compilation of the ML model, I mapped categorical variables to integer representation:
+      - Since strings alone can break the compilation of the ML model, I mapped categorical variables to integer representation:
         ```
         - df["HasCoSigner"] = df["HasCoSigner"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
         - df["HasMortgage"] = df["HasMortgage"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
