@@ -22,9 +22,7 @@ To run the app locally,
 A 10-second pitch: Where financial intelligence meets machine learning, meet FinRisk, a FinIntel tool that helps institutions flag high default-risk users using customer behavior and spending patterns rather than traditional credit bureau data. In real-world fintech applications, accurate default prediction helps institutions:
 
 - 📈 Reduce financial losses
-
 - 💥 Make smarter lending decisions
-
 - 🏦 Serve underbanked populations without formal credit history
   
 
@@ -50,36 +48,28 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet Fin
       - `'HasDependents',`
       - `'LoanPurpose',`
       - `'HasCoSigner'`
+     
+    - 
     
+
+
+To account for disproportionate impact, I used z-score normalization via the `StandardScaler` library to normalize all **continuous** variables
+
+    ```
+    scaler = StandardScaler()
+    preprocessor = ColumnTransformer([
+    ('cont', scaler, continuous_features),
+    ('cat', 'passthrough', categorical_features)
+    ])
+
+    X_train_scaled = preprocessor.fit_transform(X_train)
+    ```
+
 - Since the dataset initially featured heavy class imbalance (Non-default > default), I resorted using SMOTEEN to avoid the risk of underfitting:
   - ```
       smote_enn = SMOTEENN(random_state=42)
       X_train_scaled, y_train = smote_enn.fit_resample(X_train_scaled, y_train)
     ```
-  To ensure accurate metrics, this was only applied to **Training** partition after split.
-
-To account for disproportionate impact, I used z-score normalization via the `StandardScaler` library to normalize all **continuous** variables
-
-  ```
-# Separate continuous vs. binary categorical feature
-  X_continuous = X.drop(columns=["CAT_CREDIT_CARD"])
-  X_cat = X[["CAT_CREDIT_CARD"]].values
-
-# Train/test split
-  X_train_cont, X_test_cont, X_train_cat, X_test_cat, y_train, y_test = train_test_split(
-    X_continuous, X_cat, y, test_size=0.2, random_state=42
-  )
-
-# Scale only continuous features
-  scaler = StandardScaler()
-  X_train_scaled_cont = scaler.fit_transform(X_train_cont)
-  X_test_scaled_cont = scaler.transform(X_test_cont)
-
-# Combine scaled continuous + unscaled categorical
-  X_train_final = np.hstack([X_train_scaled_cont, X_train_cat])
-  X_test_final = np.hstack([X_test_scaled_cont, X_test_cat])
-  
-  ```
 
 The same procedure was applied for values the user inserted.
 
