@@ -49,7 +49,16 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet Fin
       - `'LoanPurpose',`
       - `'HasCoSigner'`
      
-    - 
+    - Since strings alone can break the compilation of the ML model, I mapped
+        ```
+        - has_coSigner = 1 if has_coSigner else 0
+        - has_mortgage = 1 if has_mortgage else 0
+        - has_dependents = 1 if has_dependents else 0
+
+        - loan_purpose_map = {"Business": 0, "Home": 1, "Other": 2}
+        - education_map = {"Bachelor's": 0, "High School": 1, "Other": 2}
+        - marital_status_map = {"Married": 0, "Divorced": 1, "Other": 2}
+        ```
     
 
 
