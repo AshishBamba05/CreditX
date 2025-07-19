@@ -28,7 +28,9 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet Fin
 
 ## 🚀 How It Works
 
-- The model is trained on a [Kaggle dataset]([(https://www.kaggle.com/datasets/nikhil1e9/loan-default/data)), containing **250K+** financial profiles and split using an 81/19 train-test ratio.
+  -  #### The Dataset
+    - The model is trained on a [Kaggle dataset]([(https://www.kaggle.com/datasets/nikhil1e9/loan-default/data)), containing **250K+** financial profiles and split using an 81/19 train-test ratio.
+    
 - The model collects the following input features to render predictions in the ML model:
   -  **Continuous Features**
       - `'Age'`,
@@ -49,15 +51,14 @@ A 10-second pitch: Where financial intelligence meets machine learning, meet Fin
       - `'LoanPurpose',`
       - `'HasCoSigner'`
      
-    - Since strings alone can break the compilation of the ML model, I mapped
+    - Since strings alone can break the compilation of the ML model, I mapped categorical variables to integer representation:
         ```
-        - has_coSigner = 1 if has_coSigner else 0
-        - has_mortgage = 1 if has_mortgage else 0
-        - has_dependents = 1 if has_dependents else 0
-
-        - loan_purpose_map = {"Business": 0, "Home": 1, "Other": 2}
-        - education_map = {"Bachelor's": 0, "High School": 1, "Other": 2}
-        - marital_status_map = {"Married": 0, "Divorced": 1, "Other": 2}
+        - df["HasCoSigner"] = df["HasCoSigner"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
+        - df["HasMortgage"] = df["HasMortgage"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
+        - df["Education"] = df["Education"].map({"Bachelor's": 0, "High School": 1, "Other": 2}).fillna(0).astype(int)
+        - df["HasDependents"] = df["HasDependents"].map({'Yes': 1, 'No': 0}).fillna(0).astype(int)
+        - df["LoanPurpose"] = df["LoanPurpose"].map({'Business': 0, 'Home': 1, 'Other': 2}).fillna(0).astype(int)
+        -  df["MaritalStatus"] = df["MaritalStatus"].map({'Married': 0, 'Divorced': 1, 'Other': 2}).fillna(0).astype(int)
         ```
     
 
