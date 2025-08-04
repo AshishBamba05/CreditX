@@ -8,8 +8,8 @@
 ⚠️ *Safari may have display issues due to JavaScript compatibility.*
 
 ## 🖥 Installation
-- `git clone https://github.com/yourusername/creditx.git`
-- `cd creditx`
+- `git clone https://github.com/yourusername/finrisk.ai.git`
+- `cd finrisk.ai`
 - `pip install -r requirements.txt`
 
 NOTE: Make sure you have Python 3.9+ and streamlit installed.
